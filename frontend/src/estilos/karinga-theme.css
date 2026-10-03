@@ -1,0 +1,2907 @@
+:root {
+  --verde-oscuro: #143D2B;
+  --verde-medio: #1F5F3E;
+  --verde-claro: #2E7D32;
+  --verde-fondo: #F0FDF4;
+  --verde-borde: #BBF7D0;
+
+  --amarillo-sol: #F59E0B;
+  --amarillo-sol-hover: #D97706;
+  --amarillo-fondo: #FFFBEB;
+  --amarillo-borde: #FDE68A;
+
+  --azul-agua: #0284C7;
+  --azul-agua-hover: #0369A1;
+  --azul-fondo: #F0F9FF;
+  --azul-borde: #BAE6FD;
+
+  --negro: #111827;
+  --gris-oscuro: #374151;
+  --gris-medio: #6B7280;
+  --gris-claro: #E5E7EB;
+  --gris-fondo: #F9FAFB;
+  --blanco: #FFFFFF;
+
+  --rojo-alerta: #DC2626;
+  --rojo-fondo: #FEF2F2;
+
+  --sombra-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --sombra-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --sombra-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --sombra-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  --radio-sm: 6px;
+  --radio-md: 10px;
+  --radio-lg: 16px;
+  --radio-xl: 22px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: linear-gradient(135deg, #F4F7F4 0%, #EBF4F0 50%, #E3EFE9 100%);
+  color: var(--negro);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+.karinga-contenedor {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 1.25rem 2rem 4rem 2rem;
+  box-sizing: border-box;
+}
+
+/* Header */
+.karinga-header {
+  background: var(--verde-oscuro);
+  color: var(--blanco);
+  border-radius: var(--radio-lg);
+  padding: 1.3rem 2rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  box-shadow: var(--sombra-lg);
+  border-bottom: 4px solid var(--amarillo-sol);
+  position: relative;
+  overflow: hidden;
+}
+
+.karinga-header::before {
+  content: "";
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 160px;
+  height: 160px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, rgba(245, 158, 11, 0) 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.karinga-header-info {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.karinga-logo-icono {
+  width: 52px;
+  height: 52px;
+  background: linear-gradient(135deg, var(--amarillo-sol) 0%, #D97706 100%);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4);
+}
+
+.karinga-titulo-h1 {
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #FFFFFF;
+}
+
+.karinga-subtitulo {
+  font-size: 0.92rem;
+  color: #D1FAE5;
+}
+
+/* Barra de Navegación por Páginas */
+.karinga-nav-paginas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.karinga-nav-btn {
+  background: var(--blanco);
+  border: 2px solid transparent;
+  border-radius: var(--radio-lg);
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  box-shadow: var(--sombra-md);
+  transition: all 0.2s ease;
+  position: relative;
+  text-align: left;
+}
+
+.karinga-nav-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-lg);
+  border-color: var(--azul-agua);
+}
+
+.karinga-nav-btn.activo {
+  border-color: var(--verde-medio);
+  background: linear-gradient(to right, #FFFFFF, var(--verde-fondo));
+  box-shadow: 0 6px 16px rgba(20, 61, 43, 0.12);
+}
+
+.karinga-nav-icono {
+  font-size: 1.8rem;
+  background: #F3F4F6;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radio-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.karinga-nav-btn.activo .karinga-nav-icono {
+  background: var(--verde-fondo);
+}
+
+.karinga-nav-textos {
+  display: flex;
+  flex-direction: column;
+}
+
+.karinga-nav-titulo {
+  font-size: 1.02rem;
+  font-weight: 800;
+  color: var(--verde-oscuro);
+}
+
+.karinga-nav-sub {
+  font-size: 0.8rem;
+  color: var(--gris-medio);
+}
+
+.karinga-nav-indicador {
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  right: 20%;
+  height: 3px;
+  background: var(--amarillo-sol);
+  border-radius: 3px 3px 0 0;
+}
+
+/* Layout del POS */
+.karinga-pos-grid {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 1.75rem;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .karinga-pos-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Tarjetas y Bloques */
+.karinga-tarjeta {
+  background: var(--blanco);
+  border-radius: var(--radio-lg);
+  padding: 1.6rem;
+  margin-bottom: 1.6rem;
+  box-shadow: var(--sombra-md);
+  border: 1px solid rgba(20, 61, 43, 0.08);
+}
+
+.karinga-seccion-bloque {
+  border-left: 5px solid var(--verde-medio);
+}
+
+.karinga-seccion-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 2px solid #EBF4F0;
+}
+
+.karinga-seccion-badge {
+  background: var(--verde-oscuro);
+  color: var(--amarillo-sol);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+}
+
+.karinga-tarjeta-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--verde-oscuro);
+}
+
+.badge-subtotal-flotante {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--verde-oscuro);
+  background: var(--verde-fondo);
+  border: 1px solid var(--verde-borde);
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radio-sm);
+}
+
+.karinga-subseccion-titulo {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--verde-oscuro);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Campos de Formulario */
+.karinga-fila-campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.karinga-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.karinga-campo label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gris-oscuro);
+}
+
+.karinga-campo label .requerido {
+  color: var(--rojo-alerta);
+  margin-left: 3px;
+}
+
+.karinga-input,
+.karinga-select {
+  width: 100%;
+  padding: 0.68rem 0.85rem;
+  font-size: 0.95rem;
+  border: 1.5px solid var(--gris-claro);
+  border-radius: var(--radio-md);
+  background-color: var(--blanco);
+  color: var(--negro);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.karinga-input:focus,
+.karinga-select:focus {
+  border-color: var(--verde-medio);
+  box-shadow: 0 0 0 3px rgba(31, 95, 62, 0.15);
+}
+
+/* Toggle Monto / Porcentaje */
+.karinga-toggle-tipo {
+  display: inline-flex;
+  background: #E5E7EB;
+  border-radius: var(--radio-sm);
+  padding: 2px;
+}
+
+.karinga-toggle-btn {
+  background: transparent;
+  border: none;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--gris-oscuro);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.karinga-toggle-btn.activo {
+  background: var(--verde-oscuro);
+  color: var(--blanco);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Selectores Visuales */
+.karinga-selector-botones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.karinga-boton-opcion {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--gris-claro);
+  border-radius: var(--radio-md);
+  background: var(--blanco);
+  cursor: pointer;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--gris-oscuro);
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.karinga-boton-opcion:hover {
+  border-color: var(--azul-agua);
+  background: var(--azul-fondo);
+}
+
+.karinga-boton-opcion.activo {
+  border-color: var(--verde-medio);
+  background: var(--verde-fondo);
+  color: var(--verde-oscuro);
+  box-shadow: 0 0 0 2px rgba(31, 95, 62, 0.2);
+}
+
+.karinga-boton-opcion.activo-temporada {
+  border-color: var(--amarillo-sol-hover);
+  background: var(--amarillo-fondo);
+  color: #92400E;
+}
+
+.karinga-cabana-detalle {
+  background: linear-gradient(to right, #F8FAFC, var(--azul-fondo));
+  border: 1px solid var(--azul-borde);
+  border-radius: var(--radio-md);
+  padding: 1rem 1.25rem;
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.karinga-dato-pill {
+  display: flex;
+  flex-direction: column;
+}
+
+.karinga-dato-pill .etiqueta {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gris-medio);
+  font-weight: 700;
+}
+
+.karinga-dato-pill .valor {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--verde-oscuro);
+}
+
+.karinga-dato-pill .valor.resaltado {
+  color: var(--azul-agua-hover);
+}
+
+.karinga-alerta-extra {
+  background: var(--amarillo-fondo);
+  border: 1.5px solid var(--amarillo-sol);
+  border-radius: var(--radio-md);
+  padding: 0.85rem 1rem;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #92400E;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.karinga-actividades-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1rem;
+}
+
+.karinga-actividad-item {
+  background: #FDFEFC;
+  border: 1.5px solid #E2E8F0;
+  border-radius: var(--radio-md);
+  padding: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.karinga-actividad-item:hover {
+  border-color: var(--verde-medio);
+}
+
+.karinga-actividad-item.activa {
+  border-color: var(--verde-medio);
+  background: #F4FAF6;
+  box-shadow: 0 0 0 1px var(--verde-medio);
+}
+
+.karinga-actividad-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.karinga-actividad-nombre {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--negro);
+}
+
+.karinga-actividad-precio {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--verde-medio);
+  background: #E8F5E9;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radio-sm);
+  white-space: nowrap;
+}
+
+.karinga-control-contador {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.karinga-btn-contador {
+  width: 32px;
+  height: 32px;
+  background: var(--gris-claro);
+  border: none;
+  border-radius: var(--radio-sm);
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gris-oscuro);
+  transition: all 0.15s ease;
+}
+
+.karinga-btn-contador:hover {
+  background: var(--verde-medio);
+  color: var(--blanco);
+}
+
+.karinga-input-contador {
+  width: 60px;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.4rem;
+  border: 1.5px solid var(--gris-claro);
+  border-radius: var(--radio-sm);
+}
+
+/* Sidebar Resumen de Venta / Ticket */
+.karinga-resumen-sidebar {
+  position: sticky;
+  top: 1.5rem;
+}
+
+.karinga-ticket {
+  background: var(--blanco);
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra-xl);
+  border: 2px solid var(--verde-oscuro);
+  overflow: hidden;
+}
+
+.karinga-ticket-header {
+  background: var(--verde-oscuro);
+  color: var(--blanco);
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.karinga-ticket-titulo {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.karinga-ticket-cuerpo {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.karinga-ticket-linea {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.92rem;
+  color: var(--gris-oscuro);
+}
+
+.karinga-ticket-linea.descuento {
+  color: var(--rojo-alerta);
+}
+
+.karinga-ticket-linea.deposito-info {
+  background: var(--azul-fondo);
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radio-sm);
+  color: var(--azul-agua-hover);
+  font-weight: 600;
+  border: 1px dashed var(--azul-borde);
+  font-size: 0.85rem;
+}
+
+.karinga-ticket-separador {
+  height: 1px;
+  background: var(--gris-claro);
+  margin: 0.4rem 0;
+}
+
+.karinga-ticket-total-box {
+  background: linear-gradient(135deg, #143D2B 0%, #1F5F3E 100%);
+  color: var(--blanco);
+  border-radius: var(--radio-md);
+  padding: 1.1rem;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.karinga-ticket-total-label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #D1FAE5;
+  font-weight: 700;
+}
+
+.karinga-ticket-total-monto {
+  font-size: 2.25rem;
+  font-weight: 900;
+  color: var(--amarillo-sol);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  margin-top: 0.2rem;
+}
+
+.karinga-btn-registrar {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, var(--amarillo-sol) 0%, var(--amarillo-sol-hover) 100%);
+  color: #121814;
+  font-weight: 800;
+  font-size: 1.05rem;
+  border: none;
+  border-radius: var(--radio-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.karinga-btn-registrar:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.45);
+}
+
+.karinga-btn-registrar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Botón Excel */
+.karinga-btn-excel {
+  background: #107C41;
+  color: var(--blanco);
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 0.65rem 1.1rem;
+  border: none;
+  border-radius: var(--radio-md);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s ease;
+  box-shadow: var(--sombra-sm);
+}
+
+.karinga-btn-excel:hover:not(:disabled) {
+  filter: brightness(0.92);
+}
+
+/* Métricas en Reportes */
+.karinga-metricas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.karinga-metrica-card {
+  background: var(--blanco);
+  border-radius: var(--radio-lg);
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: var(--sombra-md);
+  border: 1px solid rgba(20, 61, 43, 0.08);
+}
+
+.karinga-metrica-icono {
+  font-size: 2.2rem;
+  background: #F3F4F6;
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.karinga-metrica-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.karinga-metrica-label {
+  font-size: 0.82rem;
+  color: var(--gris-medio);
+  font-weight: 600;
+}
+
+.karinga-metrica-valor {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--verde-oscuro);
+}
+
+/* Pestañas de filtro en Reportes */
+.karinga-filtro-tabs {
+  display: flex;
+  background: #E5E7EB;
+  border-radius: var(--radio-md);
+  padding: 3px;
+  gap: 4px;
+}
+
+.karinga-filtro-tab {
+  background: transparent;
+  border: none;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--gris-oscuro);
+  border-radius: var(--radio-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.karinga-filtro-tab.activo {
+  background: var(--verde-oscuro);
+  color: var(--blanco);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+/* Tabla */
+.karinga-tabla-contenedor {
+  overflow-x: auto;
+  margin-top: 1rem;
+  border-radius: var(--radio-md);
+  border: 1px solid var(--gris-claro);
+}
+
+.karinga-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.88rem;
+}
+
+.karinga-tabla th {
+  background: var(--verde-oscuro);
+  color: var(--blanco);
+  padding: 0.85rem 1rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.karinga-tabla td {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--gris-claro);
+}
+
+.karinga-tabla tr:nth-child(even) {
+  background-color: #F8FAFC;
+}
+
+.karinga-tabla tr:hover {
+  background-color: var(--verde-fondo);
+}
+
+.badge-temporada {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border-radius: 9999px;
+}
+
+.badge-entre-semana { background: #E0E7FF; color: #3730A3; }
+.badge-fin-semana { background: #FEF3C7; color: #92400E; }
+.badge-temporada-alta { background: #FEE2E2; color: #991B1B; }
+
+.badge-pago {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: var(--radio-sm);
+  background: #F3F4F6;
+  color: var(--gris-oscuro);
+  border: 1px solid var(--gris-claro);
+}
+
+.karinga-alerta-toast {
+  padding: 0.9rem 1.25rem;
+  border-radius: var(--radio-md);
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  animation: fadeIn 0.3s ease;
+}
+
+.karinga-alerta-toast.exito {
+  background: var(--verde-fondo);
+  border: 1.5px solid var(--verde-medio);
+  color: var(--verde-oscuro);
+}
+
+.karinga-alerta-toast.error {
+  background: var(--rojo-fondo);
+  border: 1.5px solid var(--rojo-alerta);
+  color: var(--rojo-alerta);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========================================================
+   ESTILOS DINÁMICOS: MENÚ ESPACIOSO Y FLUJO DE 2 PAGOS
+   ======================================================== */
+.karinga-menu-dinamico {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.karinga-modo-card {
+  background: #FFFFFF;
+  border: 2px solid #E2E8F0;
+  border-radius: var(--radio-lg);
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--sombra-sm);
+}
+
+.karinga-modo-card:hover {
+  border-color: var(--verde-medio);
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-md);
+}
+
+.karinga-modo-card.activo {
+  border-color: var(--verde-medio);
+  background: #F0FDF4;
+  box-shadow: 0 0 0 3px rgba(31, 95, 62, 0.15), var(--sombra-md);
+}
+
+.karinga-modo-icono {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #F1F5F9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.karinga-modo-card.activo .karinga-modo-icono {
+  background: var(--verde-medio);
+  color: #FFFFFF;
+}
+
+.karinga-modo-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.karinga-modo-titulo {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--verde-oscuro);
+}
+
+.karinga-modo-sub {
+  font-size: 0.8rem;
+  color: var(--gris-medio);
+  line-height: 1.3;
+}
+
+/* Grilla de los 2 Pagos Juntos */
+.karinga-dos-pagos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+.karinga-pago-caja {
+  border-radius: var(--radio-lg);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.karinga-pago-caja.pago-anterior {
+  background: #F0F9FF;
+  border: 1.5px solid #BAE6FD;
+}
+
+.karinga-pago-caja.pago-actual {
+  background: #F0FDF4;
+  border: 1.5px solid #BBF7D0;
+}
+
+.karinga-pago-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.karinga-pago-cabecera h4 {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.karinga-pago-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  background: #0284C7;
+  color: #FFFFFF;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.karinga-pago-badge.actual {
+  background: #15803D;
+}
+
+.karinga-saldo-destacado {
+  background: #FFFFFF;
+  border: 1.5px solid #86EFAC;
+  border-radius: var(--radio-md);
+  padding: 0.85rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.karinga-saldo-destacado span {
+  font-size: 0.88rem;
+  color: #166534;
+  font-weight: 600;
+}
+
+.karinga-saldo-destacado .monto {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #15803D;
+}
+
+
+/* Selector y Bloque de Descuento */
+.karinga-descuento-bloque {
+  background: #F8FAFC;
+  border: 1.5px solid #E2E8F0;
+  border-radius: var(--radio-md);
+  padding: 1rem;
+  margin-top: 1.25rem;
+}
+
+.karinga-descuento-grid {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.karinga-tipo-descuento-btn-group {
+  display: inline-flex;
+  border-radius: var(--radio-md);
+  overflow: hidden;
+  border: 1.5px solid var(--gris-claro);
+  background: var(--blanco);
+}
+
+.karinga-tipo-descuento-btn {
+  padding: 0.55rem 0.95rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  border: none;
+  background: transparent;
+  color: var(--gris-oscuro);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.karinga-tipo-descuento-btn.activo {
+  background: var(--verde-oscuro);
+  color: var(--blanco);
+}
+
+/* Modal Estándar Karinga */
+.karinga-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: karingaFadeIn 0.2s ease-out;
+}
+
+.karinga-modal-contenido {
+  background: var(--blanco);
+  border-radius: var(--radio-lg);
+  padding: 1.75rem;
+  box-shadow: var(--sombra-xl);
+  border: 1px solid var(--gris-claro);
+  width: 100%;
+  position: relative;
+  animation: karingaSlideUp 0.25s ease-out;
+}
+
+@keyframes karingaFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes karingaSlideUp {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Tarjeta Visual Destacada de Fecha y Hora */
+.karinga-visual-fecha-hora-card {
+  background: linear-gradient(135deg, #F0FDF4 0%, #E8F5E9 100%);
+  border: 1.5px solid #86EFAC;
+  border-radius: var(--radio-lg);
+  padding: 0.9rem 1.25rem;
+  margin-bottom: 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  box-shadow: 0 2px 8px rgba(22, 101, 52, 0.08);
+}
+
+.karinga-visual-fecha-dia {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.karinga-visual-dia-badge {
+  background: var(--verde-oscuro);
+  color: #FFFFFF;
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--radio-md);
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  box-shadow: 0 2px 5px rgba(20, 61, 43, 0.2);
+  border: 1px solid var(--amarillo-sol);
+}
+
+.karinga-visual-fecha-texto {
+  display: flex;
+  flex-direction: column;
+}
+
+.karinga-visual-fecha-grande {
+  font-size: 1.15rem;
+  color: #064E3B;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.karinga-visual-temporada-subtexto {
+  font-size: 0.82rem;
+  color: #047857;
+  font-weight: 600;
+  margin-top: 0.15rem;
+}
+
+.karinga-visual-hora-box {
+  display: flex;
+  align-items: center;
+}
+
+.karinga-visual-hora-badge {
+  background: #FFFFFF;
+  border: 1.5px solid #86EFAC;
+  border-radius: var(--radio-md);
+  padding: 0.45rem 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: var(--sombra-sm);
+}
+
+.karinga-visual-hora-12h {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--verde-oscuro);
+}
+
+.karinga-visual-hora-24h {
+  font-size: 0.8rem;
+  color: #64748B;
+  font-weight: 600;
+}
+
+.karinga-quick-dates {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.karinga-quick-btn {
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  color: #334155;
+  border-radius: 6px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  touch-action: manipulation;
+}
+
+.karinga-quick-btn:hover {
+  background: #E2E8F0;
+  border-color: #94A3B8;
+  color: var(--verde-oscuro);
+}
+
+/* Indicadores de Temporada Inteligente */
+.karinga-temporada-info-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.karinga-temporada-info-badge.entre_semana {
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+}
+
+.karinga-temporada-info-badge.fin_semana {
+  background: #ECFDF5;
+  color: #047857;
+  border: 1px solid #A7F3D0;
+}
+
+.karinga-temporada-info-badge.temporada_alta {
+  background: #FEF2F2;
+  color: #B91C1C;
+  border: 1px solid #FECACA;
+}
+
+.karinga-temporada-aviso-manual {
+  margin-top: 0.65rem;
+  padding: 0.65rem 0.95rem;
+  border-radius: var(--radio-sm);
+  background: #FFFBEB;
+  border: 1px solid #FCD34D;
+  color: #92400E;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.karinga-temporada-aviso-auto {
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+  color: #047857;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+
+/* Barra de progreso de tiempo para notificaciones */
+.karinga-alerta-toast {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.95rem 1.25rem 1.15rem 1.15rem;
+}
+
+.karinga-toast-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.karinga-toast-texto {
+  flex: 1;
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.karinga-toast-cerrar {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.2rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+  color: inherit;
+}
+
+.karinga-toast-cerrar:hover {
+  opacity: 1;
+}
+
+.karinga-toast-barra-tiempo {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3.5px;
+  background: currentColor;
+  opacity: 0.35;
+  width: 100%;
+  animation: karingaToastProgress 4.5s linear forwards;
+}
+
+@keyframes karingaToastProgress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+/* =====================================================
+   ESTILOS MODERNOS PARA BARRA DE FILTROS, SEMANAS Y BOTONES
+   ===================================================== */
+.karinga-barra-filtros-avanzada {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  background: #FFFFFF;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.25rem;
+}
+
+.karinga-grupo-pills {
+  display: inline-flex;
+  align-items: center;
+  background: #F1F5F9;
+  padding: 0.3rem;
+  border-radius: 9999px;
+  gap: 0.25rem;
+  border: 1px solid #E2E8F0;
+}
+
+.karinga-filtro-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.95rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.karinga-filtro-btn:hover {
+  color: #0F172A;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.karinga-filtro-btn.activo {
+  background: var(--verde-oscuro, #143D2B);
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(20, 61, 43, 0.28);
+}
+
+.karinga-filtro-btn .contador-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.08);
+  color: inherit;
+}
+
+.karinga-filtro-btn.activo .contador-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+}
+
+.karinga-filtro-semana-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  padding: 0.35rem 0.75rem;
+  border-radius: 10px;
+}
+
+.karinga-filtro-semana-box label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+}
+
+.karinga-select-semana {
+  border: 1px solid #CBD5E1;
+  background: #FFFFFF;
+  color: #0F172A;
+  font-size: 0.84rem;
+  font-weight: 600;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  cursor: pointer;
+  outline: none;
+  max-width: 320px;
+}
+
+.karinga-select-semana:focus {
+  border-color: var(--verde-claro, #2E7D32);
+  box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2);
+}
+
+.karinga-semana-banner {
+  background: linear-gradient(135deg, #ECFDF5 0%, #F0FDF4 100%);
+  border: 1px solid #A7F3D0;
+  border-left: 5px solid var(--verde-medio, #1F5F3E);
+  border-radius: 10px;
+  padding: 0.85rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.karinga-semana-banner-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.karinga-semana-banner-titulo {
+  font-weight: 800;
+  font-size: 1rem;
+  color: #065F46;
+  margin: 0;
+}
+
+.karinga-semana-banner-fechas {
+  font-size: 0.85rem;
+  color: #047857;
+  margin: 0;
+}
+
+.karinga-badge-semana {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #1E293B;
+  white-space: nowrap;
+}
+
+.karinga-badge-semana small {
+  font-size: 0.7rem;
+  font-weight: normal;
+  color: #64748B;
+}
+
+/* Botones Secundarios y Botones de Acción Modernos */
+.karinga-btn-secundario {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.52rem 1.05rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid #CBD5E1;
+  background: #FFFFFF;
+  color: #334155;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.karinga-btn-secundario:hover {
+  background: #F8FAFC;
+  border-color: #94A3B8;
+  color: #0F172A;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.karinga-btn-secundario:active {
+  transform: translateY(0);
+  background: #F1F5F9;
+}
+
+.karinga-btn-secundario:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Tarjeta y formulario de deducción por daño */
+.karinga-dano-banner {
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  border-left: 4px solid #D97706;
+  border-radius: 8px;
+  padding: 0.85rem 1.15rem;
+  font-size: 0.88rem;
+  color: #92400E;
+  margin-top: 1rem;
+}
+
+/* ========================================================
+   RESPONSIVIDAD MÓVIL Y ADAPTABILIDAD PARA CELULARES
+   ======================================================== */
+@media (max-width: 1024px) {
+  .karinga-contenedor {
+    padding: 1rem 1.25rem 3.5rem 1.25rem;
+  }
+  .karinga-pos-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  .karinga-resumen-sidebar {
+    position: static;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .karinga-contenedor {
+    padding: 0.65rem 0.65rem 3.5rem 0.65rem;
+  }
+
+  /* Encabezado en Celular */
+  .karinga-header {
+    padding: 1rem;
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .karinga-header-info {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+
+  .karinga-logo-icono {
+    width: 44px;
+    height: 44px;
+    font-size: 1.5rem;
+    border-radius: 10px;
+  }
+
+  .karinga-titulo-h1 {
+    font-size: 1.28rem;
+    line-height: 1.25;
+  }
+
+  .karinga-subtitulo {
+    font-size: 0.8rem;
+  }
+
+  /* Barra de Navegación 2 Columnas Compacta en Celular */
+  .karinga-nav-paginas {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .karinga-nav-btn {
+    padding: 0.65rem 0.75rem;
+    gap: 0.55rem;
+    border-radius: var(--radio-md);
+    min-height: 48px;
+  }
+
+  .karinga-nav-icono {
+    width: 36px;
+    height: 36px;
+    font-size: 1.15rem;
+    border-radius: 8px;
+  }
+
+  .karinga-nav-titulo {
+    font-size: 0.82rem;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  .karinga-nav-sub {
+    display: none; /* Ocultar subtítulo descriptivo para no saturar la pantalla */
+  }
+
+  .karinga-nav-paginas .karinga-nav-btn:last-child:nth-child(odd) {
+    grid-column: span 2;
+  }
+
+  /* Tarjetas y Secciones */
+  .karinga-tarjeta {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: var(--radio-md);
+  }
+
+  .karinga-tarjeta-titulo {
+    font-size: 1.05rem;
+  }
+
+  /* Menú Dinámico y Grillas */
+  .karinga-menu-dinamico {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+    margin-bottom: 1rem;
+  }
+
+  .karinga-modo-card {
+    padding: 0.85rem 1rem;
+    gap: 0.75rem;
+  }
+
+  .karinga-modo-icono {
+    width: 40px;
+    height: 40px;
+    font-size: 1.3rem;
+  }
+
+  .karinga-modo-titulo {
+    font-size: 0.92rem;
+  }
+
+  .karinga-modo-sub {
+    font-size: 0.76rem;
+  }
+
+  /* Grilla de Pagos Juntos */
+  .karinga-dos-pagos-grid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+    margin-top: 0.85rem;
+  }
+
+  .karinga-pago-caja {
+    padding: 0.95rem;
+  }
+
+  /* Campos de Formulario */
+  .karinga-fila-campos {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  .karinga-input,
+  .karinga-select {
+    font-size: 16px; /* Evita zoom automático molesto en iPhone Safari */
+    padding: 0.75rem 0.85rem;
+    min-height: 44px; /* Tamaño mínimo táctil */
+  }
+
+  /* Grilla de Actividades */
+  .karinga-actividades-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  /* Métricas en Reportes */
+  .karinga-metricas-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.65rem;
+    margin-bottom: 1rem;
+  }
+
+  .karinga-metrica-card {
+    padding: 0.75rem;
+    gap: 0.6rem;
+  }
+
+  .karinga-metrica-icono {
+    width: 40px;
+    height: 40px;
+    font-size: 1.5rem;
+  }
+
+  .karinga-metrica-label {
+    font-size: 0.75rem;
+  }
+
+  .karinga-metrica-valor {
+    font-size: 1.2rem;
+  }
+
+  /* Barra de Filtros Avanzada */
+  .karinga-barra-filtros-avanzada {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 0.85rem;
+  }
+
+  .karinga-grupo-pills {
+    width: 100%;
+    display: flex;
+  }
+
+  .karinga-filtro-btn {
+    flex: 1;
+    justify-content: center;
+    padding: 0.45rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .karinga-filtro-semana-box {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .karinga-select-semana {
+    max-width: 100%;
+    flex: 1;
+    font-size: 16px;
+    min-height: 40px;
+  }
+
+  /* Tablas Horizontales con Desplazamiento Fluido */
+  .karinga-tabla-contenedor {
+    margin-top: 0.75rem;
+    border-radius: 8px;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .karinga-tabla th,
+  .karinga-tabla td {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  /* Ticket Lateral en Celular */
+  .karinga-ticket-header {
+    padding: 1rem;
+  }
+
+  .karinga-ticket-titulo {
+    font-size: 1.1rem;
+  }
+
+  .karinga-ticket-total-monto {
+    font-size: 1.85rem;
+  }
+
+  .karinga-btn-registrar {
+    min-height: 48px;
+    font-size: 1rem;
+    padding: 0.85rem;
+  }
+
+  /* Modales en Pantalla Pequeña */
+  .karinga-modal-overlay {
+    padding: 0.5rem;
+  }
+
+  .karinga-modal-contenido {
+    padding: 1.15rem;
+    max-width: 96vw;
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+
+  /* Panel de Sincronización en Celulares */
+  .karinga-panel-sincronizacion {
+    padding: 0.9rem !important;
+  }
+
+  .karinga-sync-header {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+  }
+
+  .karinga-sync-btn-group {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem !important;
+  }
+
+  .karinga-sync-btn-group button {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  .karinga-sync-filter-bar {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+    padding: 0.75rem !important;
+  }
+
+  .karinga-sync-card-item {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+    padding: 0.85rem !important;
+  }
+
+  .karinga-sync-card-right {
+    width: 100%;
+    justify-content: space-between !important;
+    border-top: 1px dashed rgba(180, 83, 9, 0.25);
+    padding-top: 0.6rem;
+  }
+
+  .karinga-sync-card-right button {
+    min-height: 42px;
+    padding: 0.5rem 1rem !important;
+  }
+
+  /* Barra Rápida de Llegadas de Check-in en Cabañas */
+  .karinga-checkin-arrival-box {
+    padding: 0.85rem !important;
+  }
+
+  .karinga-checkin-arrival-header {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.65rem !important;
+  }
+
+  .karinga-checkin-arrival-pills {
+    width: 100%;
+    display: flex;
+    gap: 0.35rem !important;
+  }
+
+  .karinga-checkin-arrival-pills button {
+    flex: 1;
+    justify-content: center;
+    padding: 0.45rem 0.35rem !important;
+    font-size: 0.75rem !important;
+    min-height: 38px;
+  }
+
+  .karinga-checkin-selector-row {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.5rem !important;
+  }
+
+  .karinga-checkin-selector-row .karinga-select {
+    width: 100% !important;
+  }
+
+  .karinga-checkin-selector-row button {
+    width: 100%;
+    justify-content: center;
+    min-height: 42px;
+  }
+
+  /* Modal de Google Calendar en Móviles */
+  .karinga-modal-gcal-dialog {
+    max-width: 96vw !important;
+    max-height: 94dvh !important;
+    border-radius: 12px !important;
+  }
+
+  .karinga-modal-gcal-header {
+    padding: 0.9rem 1rem !important;
+  }
+
+  .karinga-modal-gcal-filters {
+    padding: 0.85rem 1rem !important;
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .karinga-modal-gcal-item {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+    padding: 0.85rem !important;
+  }
+
+  .karinga-modal-gcal-btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ========================================================
+   SISTEMA DE PÁGINAS MÓVILES EXCLUSIVAS (APP NATIVA)
+   ======================================================== */
+
+/* Contenedor Principal de Página Móvil */
+.karinga-mobile-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: calc(75px + env(safe-area-inset-bottom, 16px));
+  width: 100%;
+  animation: fadeIn 0.15s ease-out;
+}
+
+/* Barra Superior Móvil */
+.karinga-mobile-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 990;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(0.65rem + env(safe-area-inset-top, 0px)) 1rem 0.65rem 1rem;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(20, 61, 43, 0.08);
+  margin: -0.65rem -0.65rem 0.85rem -0.65rem;
+}
+
+.karinga-mobile-topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.karinga-mobile-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--verde-oscuro);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(20, 61, 43, 0.2);
+}
+
+.karinga-mobile-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--verde-oscuro);
+  margin: 0;
+  line-height: 1.15;
+}
+
+.karinga-mobile-date {
+  font-size: 0.72rem;
+  color: #64748B;
+  font-weight: 600;
+  display: block;
+}
+
+.karinga-mobile-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.karinga-mobile-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #F0FDF4;
+  border: 1px solid #86EFAC;
+  color: var(--verde-oscuro);
+  padding: 0.4rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 36px;
+  touch-action: manipulation;
+}
+
+.karinga-mobile-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  color: #475569;
+  padding: 0.4rem 0.65rem;
+  border-radius: 8px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 36px;
+  touch-action: manipulation;
+}
+.karinga-banner-modo-pc {
+  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+  border: 1px solid #F59E0B;
+  border-radius: var(--radio-md);
+  padding: 0.65rem 1.1rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+  animation: fadeIn 0.25s ease-out;
+}
+
+.karinga-banner-modo-pc-contenido {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.karinga-banner-modo-pc-texto {
+  font-size: 0.88rem;
+  color: #78350F;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.karinga-btn-volver-movil {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: var(--verde-oscuro);
+  color: #FFFFFF;
+  border: none;
+  padding: 0.45rem 0.95rem;
+  border-radius: var(--radio-sm);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(20, 61, 43, 0.2);
+  transition: all 0.2s ease;
+  min-height: 36px;
+  touch-action: manipulation;
+}
+
+.karinga-btn-volver-movil:hover {
+  background: var(--verde-medio);
+  transform: translateY(-1px);
+}
+
+
+/* Barra de Navegación Inferior Móvil (Bottom Nav) */
+.karinga-mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: #FFFFFF;
+  border-top: 1px solid #E2E8F0;
+  padding-top: 0.45rem;
+  padding-bottom: calc(0.55rem + env(safe-area-inset-bottom, 12px));
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.karinga-mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  flex: 1;
+  min-height: 48px;
+  touch-action: manipulation;
+  color: #64748B;
+  transition: transform 100ms ease-out;
+}
+
+.karinga-mobile-nav-item:active {
+  transform: scale(0.92);
+}
+
+.karinga-mobile-nav-item.activo {
+  color: #15803D;
+}
+
+.karinga-mobile-nav-icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+}
+
+.karinga-mobile-nav-badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  background: #DC2626;
+  color: #FFFFFF;
+  font-size: 0.62rem;
+  font-weight: 800;
+  border-radius: 9999px;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.karinga-mobile-nav-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  margin-top: 2px;
+  line-height: 1;
+}
+
+/* Selector Segmentado de Pestañas */
+.karinga-mobile-segmented-tabs {
+  display: flex;
+  background: #F1F5F9;
+  padding: 4px;
+  border-radius: 10px;
+  gap: 4px;
+}
+
+.karinga-mobile-tab-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.6rem 0.4rem;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 42px;
+  touch-action: manipulation;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+
+.karinga-mobile-tab-btn.activo {
+  background: #FFFFFF;
+  color: var(--verde-oscuro);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.karinga-mobile-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+/* Barra de Acciones Rápidas Móvil */
+.karinga-mobile-quick-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.karinga-mobile-sync-hero-btn {
+  flex: 1.5;
+  background: linear-gradient(135deg, #1B4D3E 0%, #15803D 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 10px;
+  padding: 0.75rem 0.85rem;
+  font-size: 0.84rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  min-height: 46px;
+  box-shadow: 0 2px 6px rgba(27, 77, 62, 0.2);
+  touch-action: manipulation;
+}
+
+.karinga-mobile-sync-hero-btn:active {
+  transform: scale(0.98);
+}
+
+.karinga-mobile-sync-icon.anim-spin {
+  animation: spin 1s linear infinite;
+  display: inline-flex;
+}
+
+.karinga-mobile-search-toggle {
+  flex: 1;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: var(--verde-oscuro);
+  border-radius: 10px;
+  padding: 0.75rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  min-height: 46px;
+  touch-action: manipulation;
+}
+
+/* Filtros de Píldoras Rápidas */
+.karinga-mobile-filter-pills {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
+}
+
+.karinga-mobile-pill {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  background: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  color: #334155;
+  border-radius: 8px;
+  padding: 0.5rem 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+  min-height: 38px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.karinga-mobile-pill.activo {
+  background: var(--verde-oscuro);
+  border-color: var(--verde-oscuro);
+  color: #FFFFFF;
+}
+
+/* Buscador Rápido */
+.karinga-mobile-search-box {
+  position: relative;
+  width: 100%;
+}
+
+.karinga-mobile-search-box svg {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.karinga-mobile-search-box input {
+  width: 100%;
+  padding: 0.65rem 2rem 0.65rem 2.2rem;
+  border-radius: 10px;
+  border: 1px solid #CBD5E1;
+  font-size: 16px; /* evita zoom en iOS */
+  outline: none;
+  background: #FFFFFF;
+  box-sizing: border-box;
+}
+
+.karinga-mobile-search-box button {
+  position: absolute;
+  right: 0.65rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Tarjetas de Llegada de Huéspedes Espaciosas */
+.karinga-mobile-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.karinga-mobile-arrival-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.karinga-mobile-card-top {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.karinga-mobile-cabin-badge {
+  background: var(--verde-oscuro);
+  color: #FFFFFF;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.karinga-mobile-gcal-tag {
+  background: #E0F2FE;
+  color: #0369A1;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.2rem 0.45rem;
+  border-radius: 6px;
+}
+
+.karinga-mobile-nights-tag {
+  background: #FEF3C7;
+  color: #92400E;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+}
+
+.karinga-mobile-guest-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0.2rem 0 0 0;
+  line-height: 1.25;
+}
+
+.karinga-mobile-dates-row {
+  display: flex;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: #64748B;
+}
+
+.karinga-mobile-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.65rem;
+  border-top: 1px dashed #E2E8F0;
+  margin-top: 0.35rem;
+}
+
+.karinga-mobile-balance-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.karinga-mobile-balance-label {
+  font-size: 0.7rem;
+  color: #92400E;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.karinga-mobile-balance-amount {
+  font-size: 1.15rem;
+  color: #B45309;
+  font-weight: 900;
+}
+
+.karinga-mobile-checkin-action-btn {
+  background: #15803D;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 0.65rem 1.1rem;
+  font-size: 0.84rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  min-height: 44px;
+  touch-action: manipulation;
+  box-shadow: 0 2px 4px rgba(21, 128, 61, 0.25);
+}
+
+.karinga-mobile-checkin-action-btn:active {
+  transform: scale(0.97);
+}
+
+/* Sheet / Drawer de Cobro Directo */
+.karinga-mobile-checkin-sheet {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  border: 1px solid #E2E8F0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+}
+
+.karinga-mobile-sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.karinga-mobile-sheet-sub {
+  font-size: 0.74rem;
+  color: #15803D;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.karinga-mobile-sheet-title {
+  margin: 0.2rem 0 0 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.karinga-mobile-sheet-close {
+  background: #F1F5F9;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.karinga-mobile-sheet-summary {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.karinga-mobile-summary-pill {
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  padding: 0.35rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  color: #475569;
+}
+
+.karinga-mobile-summary-pill strong {
+  color: #0F172A;
+  margin-left: 0.25rem;
+}
+
+.karinga-mobile-sheet-amount-highlight {
+  background: linear-gradient(135deg, #FEF3C7 0%, #FFFBEB 100%);
+  border: 1.5px solid #FCD34D;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.karinga-mobile-amount-label {
+  font-size: 0.8rem;
+  color: #92400E;
+  font-weight: 700;
+}
+
+.karinga-mobile-amount-val {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #B45309;
+}
+
+/* Campos de Formulario Móviles */
+.karinga-mobile-field-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.karinga-mobile-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+
+.karinga-mobile-field-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.karinga-mobile-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.karinga-mobile-input,
+.karinga-mobile-select {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid #CBD5E1;
+  font-size: 16px; /* sin zoom en iOS */
+  min-height: 44px;
+  box-sizing: border-box;
+  background: #FFFFFF;
+}
+
+/* Opciones de Pago Táctiles Grandes */
+.karinga-mobile-payment-options {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.45rem;
+}
+
+.karinga-mobile-pay-btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1.5px solid #CBD5E1;
+  background: #FFFFFF;
+  color: #334155;
+  font-size: 0.86rem;
+  font-weight: 700;
+  min-height: 44px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.karinga-mobile-pay-btn.activo {
+  border-color: #15803D;
+  background: #F0FDF4;
+  color: #15803D;
+}
+
+.karinga-mobile-complete-checkin-btn {
+  background: linear-gradient(135deg, #1B4D3E 0%, #15803D 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 10px;
+  padding: 0.95rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  min-height: 50px;
+  touch-action: manipulation;
+  box-shadow: 0 4px 12px rgba(21, 128, 61, 0.3);
+  margin-top: 0.5rem;
+}
+
+.karinga-mobile-complete-checkin-btn:active {
+  transform: scale(0.98);
+}
+
+.karinga-mobile-error-box {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #DC2626;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Stepper táctil [-] [val] [+] */
+.karinga-mobile-stepper {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 8px;
+  background: #FFFFFF;
+  overflow: hidden;
+  min-height: 44px;
+}
+
+.karinga-mobile-stepper button {
+  width: 44px;
+  height: 44px;
+  background: #F8FAFC;
+  border: none;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #1E293B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.karinga-mobile-stepper span {
+  flex: 1;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+/* Tarjeta de Formulario */
+.karinga-mobile-form-card {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 1.15rem;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.karinga-mobile-form-title {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0F172A;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+/* Actividades en Móvil */
+.karinga-mobile-activities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.karinga-mobile-activity-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 0.95rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.karinga-mobile-act-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+}
+
+.karinga-mobile-act-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.karinga-mobile-act-title {
+  font-size: 0.92rem;
+  color: #0F172A;
+  font-weight: 700;
+}
+
+.karinga-mobile-act-price {
+  font-size: 0.76rem;
+  color: #64748B;
+}
+
+/* Barra Flotante de Cobro */
+.karinga-mobile-floating-bar {
+  position: fixed;
+  bottom: calc(65px + env(safe-area-inset-bottom, 12px));
+  left: 0.75rem;
+  right: 0.75rem;
+  z-index: 980;
+  background: #143D2B;
+  color: #FFFFFF;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 8px 24px rgba(20, 61, 43, 0.35);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.karinga-mobile-floating-total {
+  display: flex;
+  flex-direction: column;
+}
+
+.karinga-mobile-floating-label {
+  font-size: 0.68rem;
+  color: #86EFAC;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.karinga-mobile-floating-amount {
+  font-size: 1.18rem;
+  font-weight: 900;
+  color: #FFFFFF;
+}
+
+.karinga-mobile-floating-btn {
+  background: var(--amarillo-sol);
+  color: #143D2B;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.15rem;
+  font-size: 0.88rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  min-height: 42px;
+  touch-action: manipulation;
+}
+
+.karinga-mobile-sheet-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1050;
+  display: flex;
+  align-items: flex-end;
+  padding: 0.5rem;
+}
+
+/* Agenda de Calendario en Móvil */
+.karinga-mobile-day-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 0.85rem;
+}
+
+.karinga-mobile-day-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.65rem;
+  background: #F1F5F9;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #334155;
+}
+
+.karinga-mobile-day-header.hoy {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.karinga-mobile-today-badge {
+  background: #F59E0B;
+  color: #FFFFFF;
+  font-size: 0.64rem;
+  font-weight: 800;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+}
+
+.karinga-mobile-day-count {
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.karinga-mobile-day-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.karinga-mobile-movement-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.karinga-mobile-movement-card.checkin {
+  border-left: 4px solid #10B981;
+}
+
+.karinga-mobile-movement-card.checkout {
+  border-left: 4px solid #EF4444;
+}
+
+.karinga-mobile-mov-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.karinga-mobile-movement-card.checkin .karinga-mobile-mov-badge {
+  color: #065F46;
+}
+
+.karinga-mobile-movement-card.checkout .karinga-mobile-mov-badge {
+  color: #991B1B;
+}
+
+.karinga-mobile-mov-guest {
+  font-size: 0.95rem;
+  color: #0F172A;
+  display: block;
+}
+
+.karinga-mobile-mov-cabin {
+  font-size: 0.78rem;
+  color: #64748B;
+}
+
+.karinga-mobile-mov-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.74rem;
+  color: #64748B;
+  border-top: 1px dashed #E2E8F0;
+  padding-top: 0.4rem;
+  margin-top: 0.2rem;
+}
+
+.karinga-mobile-mov-saldo {
+  color: #B45309;
+  font-weight: 800;
+}
+
+.karinga-mobile-empty-state {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  background: #F8FAFC;
+  border: 1px dashed #CBD5E1;
+  border-radius: 12px;
+  color: #64748B;
+}
+
+.karinga-mobile-empty-state h4 {
+  margin: 0.5rem 0 0.25rem 0;
+  color: #1E293B;
+  font-size: 0.98rem;
+}
+
+.karinga-mobile-empty-state p {
+  margin: 0 0 0.85rem 0;
+  font-size: 0.82rem;
+}
+
+.karinga-mobile-empty-action {
+  background: var(--verde-oscuro);
+  color: #FFFFFF;
+  border: none;
+  padding: 0.5rem 0.95rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.karinga-mobile-toast-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.karinga-mobile-toast-inline.exito {
+  background: #F0FDF4;
+  color: #15803D;
+  border: 1px solid #BBF7D0;
+}
+
+.karinga-mobile-toast-inline.error {
+  background: #FEF2F2;
+  color: #991B1B;
+  border: 1px solid #FECACA;
+}
+
