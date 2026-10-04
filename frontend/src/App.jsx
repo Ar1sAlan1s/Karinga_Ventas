@@ -253,6 +253,7 @@ export default function App() {
       {esVistaMovilActiva ? (
         <MobileTopBar
           fecha={fecha}
+          onAbrirSincronizacion={() => setModalSincronizarGlobal(true)}
           paginaActiva={paginaActiva}
           onAbrirSincronizacion={
             (paginaActiva === 'cabanas' || paginaActiva === 'calendario')

@@ -155,10 +155,16 @@ export async function crearVenta(req, res) {
       reserva_cabana_id
     } = req.body;
 
-    if (!fecha || !hora || !metodo_pago) {
+    const metodoPagoEfectivo =
+      metodo_pago ||
+      metodo_pago_anticipo ||
+      metodo_pago_liquidacion ||
+      (Number(anticipo) > 0 ? 'Transferencia BBVA' : 'Efectivo');
+
+    if (!fecha || !hora) {
       return res.status(400).json({
         exito: false,
-        mensaje: 'Fecha, hora y método de pago son obligatorios.'
+        mensaje: 'Fecha y hora son obligatorios.'
       });
     }
 
@@ -236,18 +242,18 @@ export async function crearVenta(req, res) {
         fecha_checkout: calculos.fechaCheckout,
         hora_checkout: calculos.horaCheckout,
         anticipo: montoAnticipo,
-        metodo_pago_anticipo: montoAnticipo > 0 ? (metodo_pago_anticipo || metodo_pago) : null,
+        metodo_pago_anticipo: montoAnticipo > 0 ? (metodo_pago_anticipo || metodoPagoEfectivo) : null,
         comprobante_anticipo: comprobante_anticipo ? comprobante_anticipo.trim() : null,
         estado_pago: esPendiente ? 'pendiente_liquidacion' : 'liquidado',
         saldo_pendiente: saldoPendiente,
         monto_liquidado: montoLiquidado,
-        metodo_pago_liquidacion: esPendiente ? null : (metodo_pago_liquidacion || metodo_pago),
+        metodo_pago_liquidacion: esPendiente ? null : (metodo_pago_liquidacion || metodoPagoEfectivo),
         tipo_descuento: calculos.tipoDescuento,
         valor_descuento: calculos.valorDescuento,
         descuento_especial: calculos.descuentoEspecial,
         subtotal: calculos.subtotal,
         total: calculos.total,
-        metodo_pago,
+        metodo_pago: metodoPagoEfectivo,
         concepto: calculos.concepto,
         notas: notas ? notas.trim() : null
       };
@@ -382,14 +388,14 @@ export async function crearVenta(req, res) {
         descuento_especial: calculos.descuentoEspecial,
         subtotal: calculos.subtotal,
         total: calculos.total,
-        metodo_pago,
+        metodo_pago: metodoPagoEfectivo,
         anticipo: montoAnticipo,
-        metodo_pago_anticipo: montoAnticipo > 0 ? (metodo_pago_anticipo || metodo_pago) : null,
+        metodo_pago_anticipo: montoAnticipo > 0 ? (metodo_pago_anticipo || metodoPagoEfectivo) : null,
         comprobante_anticipo: comprobante_anticipo ? comprobante_anticipo.trim() : null,
         estado_pago: esPendiente ? 'pendiente_liquidacion' : 'liquidado',
         saldo_pendiente: saldoPendiente,
         monto_liquidado: montoLiquidado,
-        metodo_pago_liquidacion: esPendiente ? null : (metodo_pago_liquidacion || metodo_pago),
+        metodo_pago_liquidacion: esPendiente ? null : (metodo_pago_liquidacion || metodoPagoEfectivo),
         concepto: calculos.concepto,
         detalles_actividades: calculos.detallesActividades,
         notas: notas ? notas.trim() : null

@@ -42,8 +42,11 @@ export default function PaginaCabanasMobile({
   const [sincronizandoGlobal, setSincronizandoGlobal] = useState(false);
   const [mensajeSync, setMensajeSync] = useState(null);
 
-  // Estado de Reservación en proceso de Check-in
+  // Estado de Reservación en proceso de Check-in (2 Pagos: Anticipo + Liquidación)
   const [reservaSeleccionada, setReservaSeleccionada] = useState(null);
+  const [montoAnticipoCheckin, setMontoAnticipoCheckin] = useState(0);
+  const [metodoPagoAnticipoCheckin, setMetodoPagoAnticipoCheckin] = useState('Transferencia BBVA');
+  const [comprobanteAnticipoCheckin, setComprobanteAnticipoCheckin] = useState('');
   const [metodoPagoLiquidacion, setMetodoPagoLiquidacion] = useState('Efectivo');
   const [comprobanteLiquidacion, setComprobanteLiquidacion] = useState('');
   const [descuentoCheckin, setDescuentoCheckin] = useState(0);
@@ -52,9 +55,21 @@ export default function PaginaCabanasMobile({
   const [nuevaCabanaId, setNuevaCabanaId] = useState('');
   const [nuevoNombreHuesped, setNuevoNombreHuesped] = useState('');
   const [nuevasNoches, setNuevasNoches] = useState(1);
+  const [modalidadCobroNueva, setModalidadCobroNueva] = useState('anticipo'); // 'anticipo' | 'total' | 'pendiente'
   const [nuevoAnticipo, setNuevoAnticipo] = useState('');
-  const [nuevoMetodoAnticipo, setNuevoMetodoAnticipo] = useState('Transferencia BBVA');
+  const [nuevoMetodoPago, setNuevoMetodoPago] = useState('Transferencia BBVA');
   const [nuevoComprobante, setNuevoComprobante] = useState('');
+
+  // Cabaña seleccionada y total calculado para nueva reservación
+  const cabanaSeleccionadaObj = useMemo(() => {
+    return cabanas.find((c) => String(c.id) === String(nuevaCabanaId)) || null;
+  }, [cabanas, nuevaCabanaId]);
+
+  const totalEstanciaNueva = useMemo(() => {
+    if (!cabanaSeleccionadaObj) return 0;
+    const desglose = calcularDesgloseNoches(fecha, nuevasNoches, diasTemporadaAlta, cabanaSeleccionadaObj);
+    return desglose.reduce((sum, n) => sum + (n.precio || 0), 0);
+  }, [cabanaSeleccionadaObj, fecha, nuevasNoches, diasTemporadaAlta]);
 
   // Estado para Extras & Daños
   const [extraReservaId, setExtraReservaId] = useState('');
@@ -140,35 +155,39 @@ export default function PaginaCabanasMobile({
   // Manejar click en "Cobrar Check-in" de una tarjeta
   const iniciarCheckinDeReserva = (reserva) => {
     setReservaSeleccionada(reserva);
+    const ant = Number(reserva.anticipo) || 0;
+    setMontoAnticipoCheckin(ant);
+    setMetodoPagoAnticipoCheckin(reserva.metodo_pago_anticipo || (ant > 0 ? 'Transferencia BBVA' : 'Transferencia BBVA'));
+    setComprobanteAnticipoCheckin(reserva.comprobante_anticipo || '');
     setDescuentoCheckin(Number(reserva.descuento_especial) || 0);
-    setMetodoPagoLiquidacion('Efectivo');
+    setMetodoPagoLiquidacion(reserva.metodo_pago_liquidacion || 'Efectivo');
     setComprobanteLiquidacion('');
     setErrorMensaje('');
   };
 
-  // Confirmar cobro de Check-in
+  // Confirmar cobro de Check-in (Registra Pago 1 de Anticipo y Pago 2 de Liquidación)
   const confirmarCobroCheckin = async () => {
     if (!reservaSeleccionada) return;
     setErrorMensaje('');
 
-    const saldoOriginal = Number(reservaSeleccionada.saldo_pendiente) > 0
-      ? Number(reservaSeleccionada.saldo_pendiente)
-      : Number(reservaSeleccionada.total) - Number(reservaSeleccionada.anticipo || 0);
-
-    const saldoFinal = Math.max(0, saldoOriginal - Number(descuentoCheckin || 0));
+    const totalReserva = Number(reservaSeleccionada.total) || 0;
+    const anticipoNum = Math.max(0, Number(montoAnticipoCheckin) || 0);
+    const descNum = Math.max(0, Number(descuentoCheckin) || 0);
+    const saldoFinal = Math.max(0, Math.round((totalReserva - anticipoNum - descNum) * 100) / 100);
 
     try {
       if (alLiquidarSaldo) {
         await alLiquidarSaldo(reservaSeleccionada.id, {
+          anticipo: anticipoNum,
+          metodo_pago_anticipo: anticipoNum > 0 ? metodoPagoAnticipoCheckin : null,
+          comprobante_anticipo: comprobanteAnticipoCheckin.trim(),
           monto_liquidado: saldoFinal,
-          metodo_pago_liquidacion: metodoPagoLiquidacion,
-          metodo_pago: metodoPagoLiquidacion,
-          descuento_especial: Number(descuentoCheckin) || 0,
-          anticipo: Number(reservaSeleccionada.anticipo) || 0,
-          metodo_pago_anticipo: reservaSeleccionada.metodo_pago_anticipo,
-          comprobante_anticipo: reservaSeleccionada.comprobante_anticipo,
+          metodo_pago_liquidacion: saldoFinal > 0 ? metodoPagoLiquidacion : null,
+          metodo_pago: saldoFinal > 0 ? metodoPagoLiquidacion : (anticipoNum > 0 ? metodoPagoAnticipoCheckin : 'Efectivo'),
           comprobante_pago: comprobanteLiquidacion.trim(),
-          notas: `Check-in completado en recepción el ${fecha} ${hora}`
+          descuento_especial: descNum,
+          total: totalReserva,
+          notas: `Check-in completado en recepción el ${fecha} ${hora} [Anticipo: $${anticipoNum} vía ${metodoPagoAnticipoCheckin}, Liquidación: $${saldoFinal} vía ${metodoPagoLiquidacion}${descNum > 0 ? `, Descuento: $${descNum}` : ''}]`
         }, () => {
           setReservaSeleccionada(null);
           if (alRecargarVentas) alRecargarVentas();
@@ -179,7 +198,7 @@ export default function PaginaCabanasMobile({
     }
   };
 
-  // Crear nueva reservación
+  // Crear nueva reservación (con soporte de modalidades: Anticipo, Pago Total o Sin Anticipo)
   const crearNuevaReservacion = () => {
     setErrorMensaje('');
     if (!nuevaCabanaId) {
@@ -197,13 +216,41 @@ export default function PaginaCabanasMobile({
     const desglose = calcularDesgloseNoches(fecha, nuevasNoches, diasTemporadaAlta, cabanaObj);
     const totalEstancia = desglose.reduce((sum, n) => sum + (n.precio || 0), 0);
     const costoPromedioNoche = nuevasNoches > 0 ? Math.round(totalEstancia / nuevasNoches) : 0;
-    const anticipoNum = Number(nuevoAnticipo) || 0;
-    const saldoPendiente = Math.max(0, totalEstancia - anticipoNum);
+
+    let anticipoFinal = 0;
+    let montoLiquidado = 0;
+    let saldoPendiente = totalEstancia;
+    let metodoPagoGeneral = nuevoMetodoPago || 'Transferencia BBVA';
+    let metodoPagoAnticipoFinal = null;
+    let metodoPagoLiquidacionFinal = null;
+    let estadoPago = 'pendiente_liquidacion';
+
+    if (modalidadCobroNueva === 'anticipo') {
+      anticipoFinal = Number(nuevoAnticipo) || 0;
+      saldoPendiente = Math.max(0, totalEstancia - anticipoFinal);
+      montoLiquidado = 0;
+      metodoPagoAnticipoFinal = anticipoFinal > 0 ? nuevoMetodoPago : null;
+      metodoPagoGeneral = nuevoMetodoPago || 'Transferencia BBVA';
+      estadoPago = saldoPendiente <= 0 ? 'liquidado' : (anticipoFinal > 0 ? 'anticipo_pagado' : 'pendiente_liquidacion');
+    } else if (modalidadCobroNueva === 'total') {
+      anticipoFinal = 0;
+      montoLiquidado = totalEstancia;
+      saldoPendiente = 0;
+      metodoPagoGeneral = nuevoMetodoPago || 'Efectivo';
+      metodoPagoLiquidacionFinal = nuevoMetodoPago || 'Efectivo';
+      estadoPago = 'liquidado';
+    } else if (modalidadCobroNueva === 'pendiente') {
+      anticipoFinal = 0;
+      montoLiquidado = 0;
+      saldoPendiente = totalEstancia;
+      metodoPagoGeneral = 'Pendiente';
+      estadoPago = 'pendiente_liquidacion';
+    }
 
     const checkoutCalculado = calcularFechaCheckout(fecha, nuevasNoches);
 
     const payload = {
-      tipo: 'cabana',
+      tipo: 'cabanas',
       fecha,
       hora,
       temporada,
@@ -219,15 +266,17 @@ export default function PaginaCabanasMobile({
       subtotal_estancia: totalEstancia,
       total: totalEstancia,
       deposito_garantia: cabanaObj.deposito,
-      anticipo: anticipoNum,
-      metodo_pago_anticipo: anticipoNum > 0 ? nuevoMetodoAnticipo : null,
-      comprobante_anticipo: nuevoComprobante.trim(),
-      estado_pago: saldoPendiente <= 0 ? 'liquidado' : (anticipoNum > 0 ? 'anticipo_pagado' : 'pendiente'),
+      anticipo: anticipoFinal,
+      metodo_pago_anticipo: metodoPagoAnticipoFinal,
+      comprobante_anticipo: (modalidadCobroNueva === 'anticipo' && nuevoComprobante) ? nuevoComprobante.trim() : null,
+      estado_pago: estadoPago,
       saldo_pendiente: saldoPendiente,
-      monto_liquidado: 0,
-      metodo_pago_liquidacion: null,
+      monto_liquidado: montoLiquidado,
+      metodo_pago_liquidacion: metodoPagoLiquidacionFinal,
+      metodo_pago: metodoPagoGeneral,
+      comprobante_pago: (modalidadCobroNueva === 'total' && nuevoComprobante) ? nuevoComprobante.trim() : null,
       descuento_especial: 0,
-      notas: `Reservación creada desde móvil el ${fecha}`
+      notas: `Reservación creada desde móvil el ${fecha} (${modalidadCobroNueva === 'total' ? 'Pago Total Liquidado' : (modalidadCobroNueva === 'anticipo' ? `Anticipo de $${anticipoFinal} vía ${metodoPagoGeneral}` : 'Sin Anticipo')})`
     };
 
     if (alRegistrar) {
@@ -237,6 +286,7 @@ export default function PaginaCabanasMobile({
         setNuevasNoches(1);
         setNuevoAnticipo('');
         setNuevoComprobante('');
+        setModalidadCobroNueva('anticipo');
         setSubpestana('checkin');
       });
     }
@@ -267,6 +317,7 @@ export default function PaginaCabanasMobile({
           }}
         >
           <Icono nombre="bed" tamano={16} color="currentColor" />
+          <span>Nueva Reserva</span>
           <span>+ Nueva Reserva</span>
         </button>
 
@@ -498,8 +549,8 @@ export default function PaginaCabanasMobile({
               <strong>{reservaSeleccionada.noches} noche(s)</strong>
             </div>
             <div className="karinga-mobile-summary-pill">
-              <span>Anticipo Pagado:</span>
-              <strong>${Number(reservaSeleccionada.anticipo || 0).toLocaleString('es-MX')} MXN</strong>
+              <span>Total Estancia:</span>
+              <strong>${(Number(reservaSeleccionada.total) || 0).toLocaleString('es-MX')} MXN</strong>
             </div>
           </div>
 
@@ -510,66 +561,149 @@ export default function PaginaCabanasMobile({
             </div>
           )}
 
-          {/* Monto Final a Cobrar */}
-          <div className="karinga-mobile-sheet-amount-highlight">
-            <span className="karinga-mobile-amount-label">Saldo a Liquidar en Mano:</span>
-            <span className="karinga-mobile-amount-val">
-              ${Math.max(
-                0,
-                (Number(reservaSeleccionada.saldo_pendiente) || Number(reservaSeleccionada.total)) - Number(descuentoCheckin || 0)
-              ).toLocaleString('es-MX', { minimumFractionDigits: 2 })}{' '}
-              MXN
-            </span>
-          </div>
-
-          {/* Selector de Método de Pago */}
-          <div className="karinga-mobile-field-block">
-            <label className="karinga-mobile-label">Método de Pago de la Liquidación:</label>
-            <div className="karinga-mobile-payment-options">
-              {['Efectivo', 'Tarjeta en Terminal', 'Transferencia BBVA', 'Transferencia Bajío'].map((met) => (
-                <button
-                  key={met}
-                  type="button"
-                  className={`karinga-mobile-pay-btn ${metodoPagoLiquidacion === met ? 'activo' : ''}`}
-                  onClick={() => setMetodoPagoLiquidacion(met)}
-                >
-                  <Icono
-                    nombre={met.includes('Efectivo') ? 'coins' : met.includes('Tarjeta') ? 'credit-card' : 'building-bank'}
-                    tamano={16}
-                    color="currentColor"
-                  />
-                  <span>{met}</span>
-                </button>
-              ))}
+          {/* ============================================= */}
+          {/* PAGO 1: ANTICIPO (Apartado Previo)           */}
+          {/* ============================================= */}
+          <div style={{
+            background: '#F0FDF4',
+            border: '1px solid #BBF7D0',
+            borderRadius: '12px',
+            padding: '0.85rem',
+            marginBottom: '0.85rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.65rem', color: '#166534', fontWeight: 700, fontSize: '0.84rem' }}>
+              <Icono nombre="building-bank" tamano={16} color="#16A34A" />
+              <span>PAGO 1: Anticipo / Apartado Previo</span>
             </div>
-          </div>
 
-          {/* Descuento Opcional */}
-          <div className="karinga-mobile-field-block">
-            <label className="karinga-mobile-label">Descuento Especial (Opcional):</label>
-            <input
-              type="number"
-              className="karinga-mobile-input"
-              placeholder="$0.00"
-              value={descuentoCheckin || ''}
-              onChange={(e) => setDescuentoCheckin(Number(e.target.value) || 0)}
-              inputMode="decimal"
-            />
-          </div>
-
-          {/* Comprobante / Referencia */}
-          {metodoPagoLiquidacion !== 'Efectivo' && (
             <div className="karinga-mobile-field-block">
-              <label className="karinga-mobile-label">Número de Comprobante / Autorización:</label>
+              <label className="karinga-mobile-label">Monto de Anticipo ($ MXN):</label>
               <input
-                type="text"
+                type="number"
                 className="karinga-mobile-input"
-                placeholder="Ej. TRANS-49102..."
-                value={comprobanteLiquidacion}
-                onChange={(e) => setComprobanteLiquidacion(e.target.value)}
+                placeholder="$0.00"
+                value={montoAnticipoCheckin === 0 ? '' : montoAnticipoCheckin}
+                onChange={(e) => setMontoAnticipoCheckin(e.target.value === '' ? 0 : Number(e.target.value))}
+                inputMode="decimal"
+              />
+              <span style={{ fontSize: '0.71rem', color: '#64748B', marginTop: '0.2rem', display: 'block' }}>
+                Si el cliente ya transfirió un anticipo, regístralo aquí para descontarlo del saldo en mano.
+              </span>
+            </div>
+
+            {Number(montoAnticipoCheckin) > 0 && (
+              <>
+                <div className="karinga-mobile-field-block">
+                  <label className="karinga-mobile-label">Forma de Pago del Anticipo:</label>
+                  <div className="karinga-mobile-payment-options">
+                    {['Transferencia BBVA', 'Transferencia Bajío', 'Efectivo', 'Tarjeta en Terminal'].map((met) => (
+                      <button
+                        key={met}
+                        type="button"
+                        className={`karinga-mobile-pay-btn ${metodoPagoAnticipoCheckin === met ? 'activo' : ''}`}
+                        onClick={() => setMetodoPagoAnticipoCheckin(met)}
+                      >
+                        <Icono
+                          nombre={met.includes('Efectivo') ? 'coins' : met.includes('Tarjeta') ? 'credit-card' : 'building-bank'}
+                          tamano={15}
+                          color="currentColor"
+                        />
+                        <span>{met}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="karinga-mobile-field-block">
+                  <label className="karinga-mobile-label">Comprobante / Referencia de Anticipo:</label>
+                  <input
+                    type="text"
+                    className="karinga-mobile-input"
+                    placeholder="Referencia o folio de transferencia..."
+                    value={comprobanteAnticipoCheckin}
+                    onChange={(e) => setComprobanteAnticipoCheckin(e.target.value)}
+                  />
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* ============================================= */}
+          {/* PAGO 2: LIQUIDACIÓN DE SALDO EN MANO        */}
+          {/* ============================================= */}
+          <div style={{
+            background: '#EFF6FF',
+            border: '1px solid #BFDBFE',
+            borderRadius: '12px',
+            padding: '0.85rem',
+            marginBottom: '0.85rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.65rem', color: '#1E40AF', fontWeight: 700, fontSize: '0.84rem' }}>
+              <Icono nombre="hand-coins" tamano={16} color="#2563EB" />
+              <span>PAGO 2: Liquidación de Saldo (Cobro en mano)</span>
+            </div>
+
+            {/* Descuento Opcional */}
+            <div className="karinga-mobile-field-block">
+              <label className="karinga-mobile-label">Descuento Especial (Opcional):</label>
+              <input
+                type="number"
+                className="karinga-mobile-input"
+                placeholder="$0.00"
+                value={descuentoCheckin === 0 ? '' : descuentoCheckin}
+                onChange={(e) => setDescuentoCheckin(Number(e.target.value) || 0)}
+                inputMode="decimal"
               />
             </div>
-          )}
+
+            {/* Monto Final a Cobrar en Mano */}
+            <div className="karinga-mobile-sheet-amount-highlight">
+              <span className="karinga-mobile-amount-label">Saldo a Cobrar en Mano:</span>
+              <span className="karinga-mobile-amount-val">
+                ${Math.max(
+                  0,
+                  (Number(reservaSeleccionada.total) || 0) - (Number(montoAnticipoCheckin) || 0) - (Number(descuentoCheckin) || 0)
+                ).toLocaleString('es-MX', { minimumFractionDigits: 2 })}{' '}
+                MXN
+              </span>
+            </div>
+
+            {/* Selector de Método de Pago de la Liquidación */}
+            <div className="karinga-mobile-field-block">
+              <label className="karinga-mobile-label">Método de Pago de la Liquidación:</label>
+              <div className="karinga-mobile-payment-options">
+                {['Efectivo', 'Tarjeta en Terminal', 'Transferencia BBVA', 'Transferencia Bajío'].map((met) => (
+                  <button
+                    key={met}
+                    type="button"
+                    className={`karinga-mobile-pay-btn ${metodoPagoLiquidacion === met ? 'activo' : ''}`}
+                    onClick={() => setMetodoPagoLiquidacion(met)}
+                  >
+                    <Icono
+                      nombre={met.includes('Efectivo') ? 'coins' : met.includes('Tarjeta') ? 'credit-card' : 'building-bank'}
+                      tamano={15}
+                      color="currentColor"
+                    />
+                    <span>{met}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Comprobante / Referencia de liquidación */}
+            {metodoPagoLiquidacion !== 'Efectivo' && (
+              <div className="karinga-mobile-field-block">
+                <label className="karinga-mobile-label">Número de Comprobante / Autorización:</label>
+                <input
+                  type="text"
+                  className="karinga-mobile-input"
+                  placeholder="Ej. TRANS-49102..."
+                  value={comprobanteLiquidacion}
+                  onChange={(e) => setComprobanteLiquidacion(e.target.value)}
+                />
+              </div>
+            )}
+          </div>
 
           {/* Botón de Confirmación Táctil Grande */}
           <button
@@ -664,39 +798,134 @@ export default function PaginaCabanasMobile({
               </div>
             </div>
 
+            {/* Resumen de Tarifa de la Estancia */}
+            {cabanaSeleccionadaObj && totalEstanciaNueva > 0 && (
+              <div style={{
+                background: '#F8FAFC',
+                border: '1px solid #E2E8F0',
+                borderRadius: '10px',
+                padding: '0.75rem',
+                marginBottom: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+                <div>
+                  <span style={{ fontSize: '0.72rem', color: '#64748B', display: 'block', textTransform: 'uppercase', fontWeight: 700 }}>Total por Estancia:</span>
+                  <strong style={{ fontSize: '1.05rem', color: '#1E293B' }}>
+                    ${totalEstanciaNueva.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN
+                  </strong>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <span style={{ fontSize: '0.72rem', color: '#64748B', display: 'block' }}>Depósito de Garantía:</span>
+                  <strong style={{ fontSize: '0.85rem', color: '#047857' }}>
+                    +${(Number(cabanaSeleccionadaObj.deposito) || 250).toLocaleString('es-MX')} (en check-in)
+                  </strong>
+                </div>
+              </div>
+            )}
+
+            {/* Modalidad de Cobro al Reservar */}
             <div className="karinga-mobile-field-block">
-              <label className="karinga-mobile-label">Anticipo Recibido ($):</label>
-              <input
-                type="number"
-                className="karinga-mobile-input"
-                placeholder="$0.00"
-                value={nuevoAnticipo}
-                onChange={(e) => setNuevoAnticipo(e.target.value)}
-                inputMode="decimal"
-              />
+              <label className="karinga-mobile-label">Modalidad de Cobro:</label>
+              <div className="karinga-mobile-filter-pills" style={{ marginBottom: '0.75rem' }}>
+                <button
+                  type="button"
+                  className={`karinga-mobile-pill ${modalidadCobroNueva === 'anticipo' ? 'activo' : ''}`}
+                  onClick={() => {
+                    setModalidadCobroNueva('anticipo');
+                    if (totalEstanciaNueva > 0 && !nuevoAnticipo) {
+                      setNuevoAnticipo(Math.round(totalEstanciaNueva * 0.5));
+                    }
+                  }}
+                >
+                  <Icono nombre="building-bank" tamano={13} color="currentColor" />
+                  <span>Anticipo</span>
+                </button>
+
+                <button
+                  type="button"
+                  className={`karinga-mobile-pill ${modalidadCobroNueva === 'total' ? 'activo' : ''}`}
+                  onClick={() => setModalidadCobroNueva('total')}
+                >
+                  <Icono nombre="check" tamano={13} color="currentColor" />
+                  <span>Pago Total (100%)</span>
+                </button>
+
+                <button
+                  type="button"
+                  className={`karinga-mobile-pill ${modalidadCobroNueva === 'pendiente' ? 'activo' : ''}`}
+                  onClick={() => setModalidadCobroNueva('pendiente')}
+                >
+                  <Icono nombre="calendar" tamano={13} color="currentColor" />
+                  <span>Sin Anticipo</span>
+                </button>
+              </div>
             </div>
 
-            {Number(nuevoAnticipo) > 0 && (
+            {/* Caso 1: Apartar con Anticipo */}
+            {modalidadCobroNueva === 'anticipo' && (
               <>
                 <div className="karinga-mobile-field-block">
-                  <label className="karinga-mobile-label">Método de Pago Anticipo:</label>
-                  <select
-                    className="karinga-mobile-select"
-                    value={nuevoMetodoAnticipo}
-                    onChange={(e) => setNuevoMetodoAnticipo(e.target.value)}
-                  >
-                    {METODOS_PAGO.map((m) => {
-                      const idVal = typeof m === 'object' ? m.id : m;
-                      const txtVal = typeof m === 'object' ? m.etiqueta : m;
-                      return (
-                        <option key={idVal} value={idVal}>{txtVal}</option>
-                      );
-                    })}
-                  </select>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                    <label className="karinga-mobile-label" style={{ margin: 0 }}>Monto de Anticipo ($ MXN):</label>
+                    {totalEstanciaNueva > 0 && (
+                      <button
+                        type="button"
+                        style={{
+                          background: '#E0F2FE',
+                          border: 'none',
+                          color: '#0369A1',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          borderRadius: '6px',
+                          padding: '0.15rem 0.45rem',
+                          cursor: 'pointer'
+                        }}
+                        onClick={() => setNuevoAnticipo(Math.round(totalEstanciaNueva * 0.5))}
+                      >
+                        Sugerir 50% (${Math.round(totalEstanciaNueva * 0.5).toLocaleString('es-MX')})
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    type="number"
+                    className="karinga-mobile-input"
+                    placeholder="$0.00"
+                    value={nuevoAnticipo}
+                    onChange={(e) => setNuevoAnticipo(e.target.value)}
+                    inputMode="decimal"
+                  />
+                  {totalEstanciaNueva > 0 && (
+                    <div style={{ marginTop: '0.35rem', fontSize: '0.74rem', color: '#475569' }}>
+                      Saldo pendiente al check-in: <strong style={{ color: '#D97706' }}>${Math.max(0, totalEstanciaNueva - (Number(nuevoAnticipo) || 0)).toLocaleString('es-MX')} MXN</strong>
+                    </div>
+                  )}
                 </div>
 
                 <div className="karinga-mobile-field-block">
-                  <label className="karinga-mobile-label">Comprobante de Anticipo:</label>
+                  <label className="karinga-mobile-label">Forma de Pago del Anticipo:</label>
+                  <div className="karinga-mobile-payment-options">
+                    {['Transferencia BBVA', 'Transferencia Bajío', 'Efectivo', 'Tarjeta en Terminal'].map((met) => (
+                      <button
+                        key={met}
+                        type="button"
+                        className={`karinga-mobile-pay-btn ${nuevoMetodoPago === met ? 'activo' : ''}`}
+                        onClick={() => setNuevoMetodoPago(met)}
+                      >
+                        <Icono
+                          nombre={met.includes('Efectivo') ? 'coins' : met.includes('Tarjeta') ? 'credit-card' : 'building-bank'}
+                          tamano={15}
+                          color="currentColor"
+                        />
+                        <span>{met}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="karinga-mobile-field-block">
+                  <label className="karinga-mobile-label">Comprobante / Folio de Anticipo:</label>
                   <input
                     type="text"
                     className="karinga-mobile-input"
@@ -706,6 +935,75 @@ export default function PaginaCabanasMobile({
                   />
                 </div>
               </>
+            )}
+
+            {/* Caso 2: Pago Total (100%) */}
+            {modalidadCobroNueva === 'total' && (
+              <>
+                <div style={{
+                  background: '#ECFDF5',
+                  border: '1px solid #A7F3D0',
+                  borderRadius: '10px',
+                  padding: '0.75rem',
+                  marginBottom: '0.85rem',
+                  fontSize: '0.82rem',
+                  color: '#065F46'
+                }}>
+                  Cobro total inmediato: <strong>${totalEstanciaNueva.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN</strong> (Saldo pendiente: $0.00).
+                </div>
+
+                <div className="karinga-mobile-field-block">
+                  <label className="karinga-mobile-label">Forma de Pago del Total:</label>
+                  <div className="karinga-mobile-payment-options">
+                    {['Efectivo', 'Tarjeta en Terminal', 'Transferencia BBVA', 'Transferencia Bajío'].map((met) => (
+                      <button
+                        key={met}
+                        type="button"
+                        className={`karinga-mobile-pay-btn ${nuevoMetodoPago === met ? 'activo' : ''}`}
+                        onClick={() => setNuevoMetodoPago(met)}
+                      >
+                        <Icono
+                          nombre={met.includes('Efectivo') ? 'coins' : met.includes('Tarjeta') ? 'credit-card' : 'building-bank'}
+                          tamano={15}
+                          color="currentColor"
+                        />
+                        <span>{met}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {nuevoMetodoPago !== 'Efectivo' && (
+                  <div className="karinga-mobile-field-block">
+                    <label className="karinga-mobile-label">Comprobante / Folio de Pago:</label>
+                    <input
+                      type="text"
+                      className="karinga-mobile-input"
+                      placeholder="Referencia o folio..."
+                      value={nuevoComprobante}
+                      onChange={(e) => setNuevoComprobante(e.target.value)}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Caso 3: Sin Anticipo */}
+            {modalidadCobroNueva === 'pendiente' && (
+              <div style={{
+                background: '#FFFBEB',
+                border: '1px solid #FDE68A',
+                borderRadius: '10px',
+                padding: '0.75rem',
+                marginBottom: '0.85rem',
+                fontSize: '0.82rem',
+                color: '#92400E'
+              }}>
+                <Icono nombre="alert" tamano={15} color="#D97706" />
+                <span style={{ marginLeft: '0.35rem' }}>
+                  Se creará como reservación pendiente. El huésped liquidará el total de <strong>${totalEstanciaNueva.toLocaleString('es-MX')} MXN</strong> al llegar a hacer el Check-in.
+                </span>
+              </div>
             )}
 
             <button

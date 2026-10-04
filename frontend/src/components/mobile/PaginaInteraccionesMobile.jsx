@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import Icono from '../Icono';
 import { TARIFAS_ACTIVIDADES, METODOS_PAGO } from '../../constantes/datosIniciales';
-import { determinarInfoFecha } from '../../utilidades/gestorTemporadas';
+import {
+  determinarInfoFecha,
+  formatearFechaConDia,
+  formatearHora12
+} from '../../utilidades/gestorTemporadas';
 
 export default function PaginaInteraccionesMobile({
   alRegistrar,
@@ -305,6 +309,54 @@ export default function PaginaInteraccionesMobile({
   return (
     <div className="karinga-mobile-page">
       <div className="karinga-mobile-section">
+        {/* Panel de Fecha y Hora de Venta */}
+        <div className="karinga-mobile-form-card" style={{ marginBottom: '0.85rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem' }}>
+            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--verde-oscuro)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <Icono nombre="calendar" tamano={15} color="currentColor" />
+              <span>Fecha y Hora de la Venta</span>
+            </span>
+            <span style={{
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              padding: '0.2rem 0.55rem',
+              borderRadius: '999px',
+              background: infoFecha.esTemporadaAlta ? '#FEF3C7' : '#DCFCE7',
+              color: infoFecha.esTemporadaAlta ? '#92400E' : '#166534'
+            }}>
+              {infoFecha.esTemporadaAlta ? 'Temporada Alta' : (infoFecha.esFinSemana ? 'Fin de semana' : 'Entre semana')}
+            </span>
+          </div>
+
+          <div className="karinga-mobile-field-row">
+            <div className="karinga-mobile-field-col">
+              <label className="karinga-mobile-label">Fecha:</label>
+              <input
+                type="date"
+                className="karinga-mobile-input"
+                value={fecha}
+                onChange={(e) => alCambiarFecha && alCambiarFecha(e.target.value)}
+              />
+              <div style={{ marginTop: '0.25rem', fontSize: '0.73rem', color: '#047857', fontWeight: 600 }}>
+                {formatearFechaConDia(fecha, 'media')}
+              </div>
+            </div>
+
+            <div className="karinga-mobile-field-col">
+              <label className="karinga-mobile-label">Hora:</label>
+              <input
+                type="time"
+                className="karinga-mobile-input"
+                value={hora}
+                onChange={(e) => alCambiarHora && alCambiarHora(e.target.value)}
+              />
+              <div style={{ marginTop: '0.25rem', fontSize: '0.73rem', color: '#64748B' }}>
+                {formatearHora12(hora)}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Identificación del Cliente */}
         <div className="karinga-mobile-form-card" style={{ marginBottom: '1rem' }}>
           <label className="karinga-mobile-label">Nombre del Cliente / Grupo:</label>
@@ -425,6 +477,10 @@ export default function PaginaInteraccionesMobile({
                 <h3 className="karinga-mobile-sheet-title">
                   Total: ${totalGeneral.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN
                 </h3>
+                <div style={{ marginTop: '0.25rem', fontSize: '0.74rem', color: '#166534', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <Icono nombre="calendar" tamano={12} color="currentColor" />
+                  <span>{formatearFechaConDia(fecha, 'corta')} • {formatearHora12(hora)} | {nombreCliente.trim() || 'Público General'}</span>
+                </div>
               </div>
               <button
                 type="button"

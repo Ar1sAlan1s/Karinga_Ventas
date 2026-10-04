@@ -35,9 +35,11 @@ export default function MobileTopBar({
             type="button"
             className="karinga-mobile-action-btn"
             onClick={onAbrirSincronizacion}
+            title="Sincronizar Google Calendar"
             title="Ver Google Calendar"
           >
             <Icono nombre="calendar" tamano={16} color="var(--verde-oscuro)" />
+            <span>Sincronizar</span>
             <span>Google Cal</span>
           </button>
         )}
