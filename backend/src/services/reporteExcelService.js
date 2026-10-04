@@ -154,12 +154,12 @@ function mapearFila(v) {
     // TOTAL DE LA CABAÑA: noches + personas extra + horas extra
     const totalCabanaEstancia = costoNochesCabana + costoPersonasExtra + costoHorasExtra;
 
-    // GRAN TOTAL GENERAL (Hospedaje + Horas Extra + Actividades - Descuento)
+    // GRAN TOTAL GENERAL (Hospedaje + Horas Extra + Actividades + Daños - Descuento)
     const granTotalGeneral = Math.max(
-      totalCabanaEstancia - descuento,
-      Number(v.total) + anticipo,
-      Number(v.subtotal) - descuento,
-      anticipo + montoLiquidado + saldoPendiente
+      totalCabanaEstancia - descuento + dano.monto,
+      Number(v.total) || 0,
+      (Number(v.subtotal) || 0) - descuento,
+      anticipo + montoLiquidado + saldoPendiente + dano.monto
     );
 
     return {
@@ -252,6 +252,7 @@ function generarResumenSemanas(ventas) {
         'Actividades': 0,
         'Anticipos ($ MXN)': 0,
         'Liquidaciones ($ MXN)': 0,
+        'Daños Retenidos ($ MXN)': 0,
         'Total Recaudado ($ MXN)': 0
       };
     }
@@ -263,9 +264,11 @@ function generarResumenSemanas(ventas) {
 
     const ant = Number(v.anticipo) || 0;
     const montoLiq = Number(v.monto_liquidado) || (ant === 0 ? Number(v.total) : 0);
+    const dano = obtenerDanoDeposito(v);
     item['Anticipos ($ MXN)'] += ant;
     item['Liquidaciones ($ MXN)'] += montoLiq;
-    item['Total Recaudado ($ MXN)'] += (Number(v.total) || 0);
+    item['Daños Retenidos ($ MXN)'] += dano.monto;
+    item['Total Recaudado ($ MXN)'] += (Number(v.total) || (ant + montoLiq + dano.monto));
   });
 
   return Object.values(mapaSemanas);
@@ -305,6 +308,16 @@ function generarResumenMetodosPago(ventas) {
       conteo[metLiq].totalRecaudado += montoLiq;
       conteo[metLiq].transacciones += 1;
       totalGeneral += montoLiq;
+    }
+
+    // Daño retenido del depósito en garantía (siempre ingresa en Efectivo)
+    const dano = obtenerDanoDeposito(v);
+    if (dano.monto > 0) {
+      const metDano = 'Efectivo';
+      if (!conteo[metDano]) conteo[metDano] = { metodo: metDano, totalRecaudado: 0, transacciones: 0 };
+      conteo[metDano].totalRecaudado += dano.monto;
+      conteo[metDano].transacciones += 1;
+      totalGeneral += dano.monto;
     }
   });
 
@@ -353,7 +366,7 @@ export function generarExcelVentas(ventas, tipo = 'todos', claveSemana = 'todas'
   const hojaSemanas = XLSX.utils.json_to_sheet(datosResumenSemanas);
   hojaSemanas['!cols'] = [
     { wch: 14 }, { wch: 20 }, { wch: 22 }, { wch: 16 },
-    { wch: 12 }, { wch: 14 }, { wch: 18 }, { wch: 20 }, { wch: 22 }
+    { wch: 12 }, { wch: 14 }, { wch: 18 }, { wch: 20 }, { wch: 22 }, { wch: 22 }
   ];
   XLSX.utils.book_append_sheet(libro, hojaSemanas, 'Resumen por Semanas');
 

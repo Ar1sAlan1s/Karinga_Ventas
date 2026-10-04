@@ -919,8 +919,9 @@ export async function registrarDanoDeposito(req, res) {
     const nuevoSubtotal = subtotalPrevio + monto;
     const descuento = Number(ventaExistente.descuento_especial) || 0;
     const nuevoTotal = Math.max(0, nuevoSubtotal - descuento);
-    const montoLiqPrevio = Number(ventaExistente.monto_liquidado) || 0;
-    const nuevoMontoLiquidado = montoLiqPrevio + monto;
+    // El depósito en garantía siempre se deja y retiene en EFECTIVO.
+    // Por lo tanto, no se debe sumar al monto liquidado (que mantiene su método original como Tarjeta/Transferencia).
+    const nuevoMontoLiquidado = Number(ventaExistente.monto_liquidado) || 0;
 
     const depositoOriginal = Number(ventaExistente.deposito_requerido) || 500.0;
     const depositoDevolver = Math.max(0, depositoOriginal - monto);
@@ -936,6 +937,7 @@ export async function registrarDanoDeposito(req, res) {
       subtotal: nuevoSubtotal,
       total: nuevoTotal,
       monto_liquidado: nuevoMontoLiquidado,
+      saldo_pendiente: 0,
       concepto: nuevoConcepto,
       notas: nuevasNotas,
       updated_at: new Date()

@@ -56,7 +56,7 @@ function obtenerDanoDeposito(v) {
     while ((m = regex.exec(v.concepto)) !== null) {
       const cant = parseFloat(m[2]) || 0;
       monto += cant;
-      conceptos.push(`${m[1].trim()} ($${cant})`);
+      conceptos.push(m[1].trim());
     }
   } else if (v.notas && v.notas.includes('[DAÑO CUBIERTO CON DEPÓSITO]')) {
     const regex = /Se retuvo \$([0-9.,]+) MXN del depósito por:\s*"([^"]+)"/gi;
@@ -64,13 +64,16 @@ function obtenerDanoDeposito(v) {
     while ((m = regex.exec(v.notas)) !== null) {
       const cant = parseFloat(m[1]) || 0;
       monto += cant;
-      conceptos.push(`${m[2].trim()} ($${cant})`);
+      conceptos.push(m[2].trim());
     }
   }
   return { monto, concepto: conceptos.join(', ') || null };
 }
 
 function obtenerDesgloseCobrosExtra(v) {
+  if (Array.isArray(v.cobros_extra_detalle) && v.cobros_extra_detalle.length > 0) {
+    return v.cobros_extra_detalle;
+  }
   const extras = [];
   const hExtra = Number(v.horas_extra) || 0;
   const costoHExtra = Number(v.costo_horas_extra) || (hExtra * 250);
@@ -209,6 +212,30 @@ export default function PaginaReportes({
         }
         mapa[metLiq].total += montoLiq;
         mapa[metLiq].cantidad += 1;
+      }
+
+      // Daño retenido del depósito en garantía (siempre ingresa en Efectivo)
+      let montoDano = 0;
+      if (v.concepto && v.concepto.includes('[Daño/Pérdida:')) {
+        const regex = /\[Daño\/Pérdida:\s*([^(]+?)\s*\(\$([0-9.,]+)\)\]/gi;
+        let m;
+        while ((m = regex.exec(v.concepto)) !== null) {
+          montoDano += parseFloat(m[2]) || 0;
+        }
+      } else if (v.notas && v.notas.includes('[DAÑO CUBIERTO CON DEPÓSITO]')) {
+        const regexNotas = /Se retuvo \$([0-9.,]+) MXN del depósito por:\s*"([^"]+)"/gi;
+        let m;
+        while ((m = regexNotas.exec(v.notas)) !== null) {
+          montoDano += parseFloat(m[1]) || 0;
+        }
+      }
+      if (montoDano > 0) {
+        const metDano = 'Efectivo';
+        if (!mapa[metDano]) {
+          mapa[metDano] = { id: metDano, nombre: metDano, icono: 'cash', color: '#16A34A', total: 0, cantidad: 0 };
+        }
+        mapa[metDano].total += montoDano;
+        mapa[metDano].cantidad += 1;
       }
     });
 
