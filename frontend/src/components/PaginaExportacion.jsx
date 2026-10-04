@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import Icono from './Icono';
 import { exportarExcelCliente } from '../servicios/exportarExcel';
-import { obtenerSemanasDeVentas, filtrarVentasPorSemana } from '../utilidades/gestorSemanas';
+import { obtenerSemanasDeVentas, filtrarVentasPorSemana, obtenerInfoSemana, obtenerSemanaActual } from '../utilidades/gestorSemanas';
 
 export default function PaginaExportacion({
   ventas = [],
@@ -11,9 +11,13 @@ export default function PaginaExportacion({
   const [tipoReporte, setTipoReporte] = useState('todos'); // 'todos', 'cabanas', 'interacciones'
   const [filtroSemana, setFiltroSemana] = useState('todas'); // 'todas' o 'YYYY-Wnn'
 
+  const semanaActual = useMemo(() => obtenerSemanaActual(), []);
+
   const semanasDisponibles = useMemo(() => {
-    return obtenerSemanasDeVentas(ventas);
-  }, [ventas]);
+    const semanas = obtenerSemanasDeVentas(ventas);
+    if (!semanaActual) return semanas;
+    return semanas.filter((s) => s.claveSemana <= semanaActual.claveSemana);
+  }, [ventas, semanaActual]);
 
   const semanaSeleccionadaInfo = useMemo(() => {
     if (filtroSemana === 'todas') return null;
@@ -24,6 +28,14 @@ export default function PaginaExportacion({
   let ventasSeleccionadas = ventas;
   if (tipoReporte === 'cabanas') ventasSeleccionadas = ventas.filter((v) => Boolean(v.cabana_id));
   else if (tipoReporte === 'interacciones') ventasSeleccionadas = ventas.filter((v) => !v.cabana_id);
+
+  // Excluir semanas futuras (solo semanas finalizadas o semana actual)
+  if (semanaActual) {
+    ventasSeleccionadas = ventasSeleccionadas.filter((v) => {
+      const info = obtenerInfoSemana(v.fecha);
+      return info && info.claveSemana <= semanaActual.claveSemana;
+    });
+  }
 
   // Filtrar por semana
   ventasSeleccionadas = filtrarVentasPorSemana(ventasSeleccionadas, filtroSemana);
@@ -86,12 +98,15 @@ export default function PaginaExportacion({
               onChange={(e) => setFiltroSemana(e.target.value)}
               style={{ fontWeight: 600 }}
             >
-              <option value="todas">Todas las Semanas (Historial Completo)</option>
-              {semanasDisponibles.map((s) => (
-                <option key={s.claveSemana} value={s.claveSemana}>
-                  {s.etiquetaCorta}: {s.inicioMX} al {s.finMX} ({s.totalVentas} ventas)
-                </option>
-              ))}
+              <option value="todas">Todas las Semanas Concluidas y Semana Actual</option>
+              {semanasDisponibles.map((s) => {
+                const esActual = s.claveSemana === semanaActual?.claveSemana;
+                return (
+                  <option key={s.claveSemana} value={s.claveSemana}>
+                    {s.etiquetaCorta} {esActual ? '(Semana Actual)' : '(Concluida)'}: {s.inicioMX} al {s.finMX} ({s.totalVentas} ventas)
+                  </option>
+                );
+              })}
             </select>
           </div>
 
@@ -182,7 +197,7 @@ export default function PaginaExportacion({
             </h4>
             <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.5rem', flexWrap: 'wrap', fontSize: '0.88rem' }}>
               <span>Registros a incluir: <strong>{ventasSeleccionadas.length}</strong></span>
-              <span>Período: <strong>{semanaSeleccionadaInfo ? semanaSeleccionadaInfo.etiquetaCompleta : 'Todas las semanas'}</strong></span>
+              <span>Período: <strong>{semanaSeleccionadaInfo ? semanaSeleccionadaInfo.etiquetaCompleta : 'Semanas concluidas y semana actual'}</strong></span>
               <span>Monto total: <strong style={{ color: '#15803D' }}>$${totalMonto.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</strong></span>
               <span>Anticipos: <strong style={{ color: '#1D4ED8' }}>$${totalAnticipos.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</strong></span>
             </div>

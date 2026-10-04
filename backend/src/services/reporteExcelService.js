@@ -145,7 +145,7 @@ function obtenerDanoDeposito(v) {
 // CONSTRUCTORES DE CELDAS ESTILIZADAS
 // ============================================================================
 function celdaTexto(valor, align = 'left', bold = false, fondo = null, colorTexto = COLOR_TEXTO_TITULO, borde = bordeFino) {
-  const texto = valor !== null && valor !== undefined && valor !== '' ? String(valor) : '-';
+  const texto = valor !== null && valor !== undefined && valor !== '' ? String(valor) : (valor === '' ? '' : '-');
   return {
     v: texto,
     t: 's',
@@ -190,7 +190,7 @@ function celdaMoneda(valor, bold = false, fondo = null, colorTexto = COLOR_TEXTO
   };
 }
 
-function celdaPorcentaje(valorDecimal, bold = false, fondo = null, estiloBorde = bordeFino) {
+function celdaPorcentaje(valorDecimal, bold = false, fondo = null, estiloBorde = bordeFino, colorTexto = COLOR_TEXTO_TITULO) {
   const num = Math.round((Number(valorDecimal) || 0) * 1000) / 1000;
   return {
     v: num,
@@ -198,7 +198,7 @@ function celdaPorcentaje(valorDecimal, bold = false, fondo = null, estiloBorde =
     z: '0.0%',
     s: {
       numFmt: '0.0%',
-      font: { name: 'Calibri', sz: 10, bold, color: { rgb: COLOR_TEXTO_TITULO } },
+      font: { name: 'Calibri', sz: 10, bold, color: { rgb: colorTexto } },
       alignment: { horizontal: 'right', vertical: 'center' },
       fill: fondo ? { fgColor: { rgb: fondo } } : undefined,
       border: estiloBorde
@@ -303,7 +303,7 @@ function generarHojaDetalle(filtradas, tipo, claveSemana) {
   const TOTAL_COLS = 28;
   const hoyStr = new Date().toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' });
   const tipoEtiqueta = tipo === 'cabanas' ? 'CABAÑAS Y HOSPEDAJE' : (tipo === 'interacciones' ? 'ACTIVIDADES RECREATIVAS' : 'TODAS LAS VENTAS');
-  const periodoEtiqueta = claveSemana && claveSemana !== 'todas' ? `Período: ${claveSemana}` : 'Historial Completo';
+  const periodoEtiqueta = claveSemana && claveSemana !== 'todas' ? `Período: ${claveSemana}` : 'Semanas Concluidas y Semana Actual';
 
   const rows = [];
   const merges = [];
@@ -450,7 +450,7 @@ function generarHojaDetalle(filtradas, tipo, claveSemana) {
     celdaHeader('Personas Extra', COLOR_VERDE_SAGE),
     celdaHeader('Costo P. Extra', COLOR_VERDE_SAGE, 'right'),
     celdaHeader('Daños Retenidos', COLOR_VERDE_SAGE, 'right'),
-    celdaHeader('Descuento', COLOR_ROJO_ALERTA, 'right'),
+    celdaHeader('Descuento (%)', COLOR_ROJO_ALERTA, 'right'),
     celdaHeader('TOTAL GENERAL', COLOR_VERDE_FINANZAS, 'right'),
     celdaHeader('Estado de Pago', COLOR_AZUL_PAGOS),
     celdaHeader('Anticipo (P1)', COLOR_AZUL_PAGOS, 'right'),
@@ -460,7 +460,7 @@ function generarHojaDetalle(filtradas, tipo, claveSemana) {
     celdaHeader('Liquidación (P2)', COLOR_AZUL_PAGOS, 'right'),
     celdaHeader('Método Liquidación', COLOR_AZUL_PAGOS),
     celdaHeader('Folio Liquidación', COLOR_AZUL_PAGOS, 'left'),
-    celdaHeader('Notas y Observaciones', COLOR_VERDE_PRIMARIO, 'left')
+    celdaHeader('Observaciones', COLOR_VERDE_PRIMARIO, 'left')
   ];
   rows.push(filaEncabezados);
 
@@ -501,6 +501,15 @@ function generarHojaDetalle(filtradas, tipo, claveSemana) {
       ? (montoLiquidado > 0 ? montoLiquidado : (anticipo > 0 ? Math.max(0, granTotal - anticipo) : granTotal))
       : montoLiquidado;
 
+    // Cálculo de Descuento en Porcentaje (%)
+    let porcentajeDescuento = 0;
+    if (v.tipo_descuento === 'porcentaje' && Number(v.valor_descuento) > 0) {
+      porcentajeDescuento = Number(v.valor_descuento) / 100;
+    } else if (descuento > 0) {
+      const subtotalBase = granTotal + descuento;
+      porcentajeDescuento = subtotalBase > 0 ? (descuento / subtotalBase) : 0;
+    }
+
     const fechaCheckinStr = v.fecha_checkin ? `${formatearFecha(v.fecha_checkin)} 15:00` : (esCabana ? `${formatearFecha(v.fecha)} 15:00` : '-');
     const fechaCheckoutStr = v.fecha_checkout ? `${formatearFecha(v.fecha_checkout)} ${v.hora_checkout || '12:00'}` : '-';
 
@@ -522,7 +531,9 @@ function generarHojaDetalle(filtradas, tipo, claveSemana) {
       celdaTexto(pExtra > 0 ? `+${pExtra}` : '-', 'center', false, fondoZebra),
       celdaMoneda(cPExtra, false, fondoZebra),
       celdaMoneda(montoDano, false, fondoZebra),
-      celdaMoneda(descuento, descuento > 0, fondoZebra, descuento > 0 ? COLOR_ROJO_ALERTA : COLOR_TEXTO_TITULO),
+      porcentajeDescuento > 0
+        ? celdaPorcentaje(porcentajeDescuento, true, fondoZebra, bordeFino, COLOR_ROJO_ALERTA)
+        : celdaTexto('-', 'center', false, fondoZebra),
       celdaMoneda(granTotal, true, COLOR_BG_CARD_TOTAL, COLOR_VERDE_FINANZAS),
       celdaEstado(v.estado_pago),
       celdaMoneda(anticipo, anticipo > 0, fondoZebra, anticipo > 0 ? COLOR_AZUL_PAGOS : COLOR_TEXTO_TITULO),
@@ -532,7 +543,7 @@ function generarHojaDetalle(filtradas, tipo, claveSemana) {
       celdaMoneda(liqEfectiva, liqEfectiva > 0, fondoZebra, liqEfectiva > 0 ? COLOR_VERDE_FINANZAS : COLOR_TEXTO_TITULO),
       celdaTexto(v.metodo_pago_liquidacion || (v.estado_pago === 'liquidado' ? v.metodo_pago : '-'), 'center', false, fondoZebra),
       celdaTexto(v.comprobante_pago || '-', 'left', false, fondoZebra),
-      celdaTexto(v.notas || '-', 'left', false, fondoZebra)
+      celdaTexto('', 'left', false, fondoZebra) // Observaciones siempre vacías por requerimiento
     ];
 
     rows.push(filaData);
@@ -556,13 +567,16 @@ function generarHojaDetalle(filtradas, tipo, claveSemana) {
   }
   merges.push({ s: { r: filaTotalIdx, c: 0 }, e: { r: filaTotalIdx, c: 10 } });
 
+  const totalBaseConDescuento = totalGeneralSum + totalDescuentosSum;
+  const porcentajeDescuentoGlobal = totalBaseConDescuento > 0 ? (totalDescuentosSum / totalBaseConDescuento) : 0;
+
   filaTotales.push(celdaMoneda(totalGeneralSum > 0 ? (totalGeneralSum - totalHorasExtraSum - totalPersonasExtraSum - totalDanosSum + totalDescuentosSum) : 0, true, COLOR_BG_CARD_TOTAL, COLOR_VERDE_FINANZAS, bordeTotal));
   filaTotales.push(celdaTexto('-', 'center', true, null, COLOR_TEXTO_MUTED, bordeTotal));
   filaTotales.push(celdaMoneda(totalHorasExtraSum, true, null, COLOR_TEXTO_TITULO, bordeTotal));
   filaTotales.push(celdaTexto('-', 'center', true, null, COLOR_TEXTO_MUTED, bordeTotal));
   filaTotales.push(celdaMoneda(totalPersonasExtraSum, true, null, COLOR_TEXTO_TITULO, bordeTotal));
   filaTotales.push(celdaMoneda(totalDanosSum, true, null, COLOR_TEXTO_TITULO, bordeTotal));
-  filaTotales.push(celdaMoneda(totalDescuentosSum, true, null, COLOR_ROJO_ALERTA, bordeTotal));
+  filaTotales.push(porcentajeDescuentoGlobal > 0 ? celdaPorcentaje(porcentajeDescuentoGlobal, true, null, bordeTotal, COLOR_ROJO_ALERTA) : celdaTexto('-', 'center', true, null, COLOR_TEXTO_MUTED, bordeTotal));
   filaTotales.push(celdaMoneda(totalGeneralSum, true, COLOR_VERDE_FINANZAS, COLOR_BLANCO, bordeTotal, 11));
   filaTotales.push(celdaTexto('-', 'center', true, null, COLOR_TEXTO_MUTED, bordeTotal));
   filaTotales.push(celdaMoneda(totalAnticiposSum, true, COLOR_BG_CARD_ANTICIPO, COLOR_AZUL_PAGOS, bordeTotal, 10.5));
@@ -572,7 +586,7 @@ function generarHojaDetalle(filtradas, tipo, claveSemana) {
   filaTotales.push(celdaMoneda(totalLiquidadoSum, true, COLOR_BG_CARD_LIQUID, COLOR_VERDE_FINANZAS, bordeTotal, 10.5));
   filaTotales.push(celdaTexto('-', 'center', true, null, COLOR_TEXTO_MUTED, bordeTotal));
   filaTotales.push(celdaTexto('-', 'center', true, null, COLOR_TEXTO_MUTED, bordeTotal));
-  filaTotales.push(celdaTexto('-', 'center', true, null, COLOR_TEXTO_MUTED, bordeTotal));
+  filaTotales.push(celdaTexto('', 'left', false, null, COLOR_TEXTO_MUTED, bordeTotal)); // Observaciones vacía
 
   rows.push(filaTotales);
 
@@ -597,7 +611,7 @@ function generarHojaDetalle(filtradas, tipo, claveSemana) {
     { wch: 14 }, // Personas Extra
     { wch: 17 }, // Costo P. Extra
     { wch: 16 }, // Daños Retenidos
-    { wch: 16 }, // Descuento
+    { wch: 16 }, // Descuento (%)
     { wch: 20 }, // TOTAL GENERAL
     { wch: 20 }, // Estado de Pago
     { wch: 18 }, // Anticipo (P1)
@@ -607,7 +621,7 @@ function generarHojaDetalle(filtradas, tipo, claveSemana) {
     { wch: 19 }, // Liquidación (P2)
     { wch: 22 }, // Método Liquidación
     { wch: 20 }, // Folio Liquidación
-    { wch: 42 }  // Notas
+    { wch: 36 }  // Observaciones
   ];
 
   const rowHeights = [
@@ -636,17 +650,22 @@ function generarHojaDetalle(filtradas, tipo, claveSemana) {
 }
 
 // ============================================================================
-// HOJA 2: RESUMEN POR SEMANAS
+// HOJA 2: RESUMEN POR SEMANAS (SOLO SEMANAS CONCLUIDAS O ACTUAL)
 // ============================================================================
 function generarResumenSemanas(ventas) {
   const mapaSemanas = {};
+  const semanaActual = obtenerInfoSemana(new Date());
 
   ventas.forEach((v) => {
     const info = obtenerInfoSemana(v.fecha);
     if (!info) return;
 
+    // Excluir semanas futuras: solo semanas finalizadas o semana actual
+    if (semanaActual && info.claveSemana > semanaActual.claveSemana) return;
+
     if (!mapaSemanas[info.claveSemana]) {
       mapaSemanas[info.claveSemana] = {
+        claveSemana: info.claveSemana,
         semana: info.etiquetaSemana,
         inicioMX: info.inicioMX,
         finMX: info.finMX,
@@ -675,7 +694,7 @@ function generarResumenSemanas(ventas) {
     item.totalRecaudado += (Number(v.total) || (ant + montoLiq + dano.monto));
   });
 
-  return Object.values(mapaSemanas);
+  return Object.values(mapaSemanas).sort((a, b) => b.claveSemana.localeCompare(a.claveSemana));
 }
 
 function generarHojaSemanas(ventas, claveSemana) {
@@ -687,7 +706,7 @@ function generarHojaSemanas(ventas, claveSemana) {
   rows.push(crearFilaBanner('RANCHO KARINGA • CONSOLIDADO OPERATIVO POR SEMANAS', TOTAL_COLS));
   merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: TOTAL_COLS - 1 } });
 
-  rows.push(crearFilaSubtitulo(`Resumen agrupado por semana operativa (Lunes a Domingo)  |  Generado: ${hoyStr}  |  Moneda: MXN ($)`, TOTAL_COLS));
+  rows.push(crearFilaSubtitulo(`Semanas concluidas y semana actual (Lunes a Domingo)  |  Generado: ${hoyStr}  |  Moneda: MXN ($)`, TOTAL_COLS));
   merges.push({ s: { r: 1, c: 0 }, e: { r: 1, c: TOTAL_COLS - 1 } });
 
   rows.push(crearFilaVacia(TOTAL_COLS));
@@ -894,12 +913,23 @@ function generarHojaMetodos(ventas) {
 export function generarExcelVentas(ventas, tipo = 'todos', claveSemana = 'todas') {
   let filtradas = ventas;
 
+  // 1. Filtro por tipo
   if (tipo === 'cabanas') {
     filtradas = filtradas.filter((v) => Boolean(v.cabana_id));
   } else if (tipo === 'interacciones') {
     filtradas = filtradas.filter((v) => !v.cabana_id);
   }
 
+  // 2. Solo exportar semanas ya finalizadas o la semana actual (excluir semanas futuras)
+  const semanaActual = obtenerInfoSemana(new Date());
+  if (semanaActual) {
+    filtradas = filtradas.filter((v) => {
+      const info = obtenerInfoSemana(v.fecha);
+      return info && info.claveSemana <= semanaActual.claveSemana;
+    });
+  }
+
+  // 3. Filtro por semana específica (si no es 'todas')
   if (claveSemana && claveSemana !== 'todas') {
     filtradas = filtradas.filter((v) => {
       const info = obtenerInfoSemana(v.fecha);
