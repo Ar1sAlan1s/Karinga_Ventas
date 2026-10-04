@@ -135,15 +135,8 @@ export default function App() {
       await recargarVentas();
       if (alCompletar) alCompletar();
     } catch (err) {
-      console.warn('Guardando en memoria local por desconexión de backend:', err.message);
-      const nuevaLocal = {
-        id: Date.now(),
-        ...payload,
-        concepto: payload.concepto || (payload.cabana_id ? 'Reserva de Cabaña' : 'Solo Actividades')
-      };
-      setVentas((prev) => [nuevaLocal, ...prev]);
-      setMensajeToast({ tipo: 'exito', texto: 'Movimiento registrado localmente.' });
-      if (alCompletar) alCompletar();
+      console.error('Error al registrar venta:', err);
+      setMensajeToast({ tipo: 'error', texto: `No se guardó en la base de datos: ${err.message}` });
     } finally {
       setRegistrando(false);
     }

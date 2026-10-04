@@ -25,17 +25,24 @@ export async function obtenerCabanasApi() {
 }
 
 export async function registrarVentaApi(datosVenta) {
-  const respuesta = await fetch(`${API_BASE}/ventas`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(datosVenta)
-  });
+  try {
+    const respuesta = await fetch(`${API_BASE}/ventas`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(datosVenta)
+    });
 
-  const json = await respuesta.json();
-  if (!respuesta.ok) {
-    throw new Error(json.mensaje || 'Error al registrar el movimiento');
+    const json = await respuesta.json().catch(() => null);
+    if (!respuesta.ok) {
+      throw new Error(json?.mensaje || `Error del servidor HTTP ${respuesta.status}`);
+    }
+    return json;
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error(`No se pudo conectar con el servidor backend (${API_BASE}). Si está en Render, puede estar arrancando (espere 1 minuto) o verifique la variable VITE_API_URL en Vercel.`);
+    }
+    throw error;
   }
-  return json;
 }
 
 export async function asignarHorasExtraApi(id, payload) {
