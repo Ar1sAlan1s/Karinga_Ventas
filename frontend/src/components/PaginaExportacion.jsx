@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import Icono from './Icono';
-import { exportarExcelCliente } from '../servicios/exportarExcel';
+import VisorExcel from './VisorExcel';
+import { exportarExcelCliente, construirLibroExcel } from '../servicios/exportarExcel';
 import { obtenerSemanasDeVentas, filtrarVentasPorSemana, obtenerInfoSemana, obtenerSemanaActual } from '../utilidades/gestorSemanas';
 
 export default function PaginaExportacion({
@@ -43,6 +44,15 @@ export default function PaginaExportacion({
   const totalMonto = ventasSeleccionadas.reduce((acc, v) => acc + (Number(v.total) || 0), 0);
   const totalAnticipos = ventasSeleccionadas.reduce((acc, v) => acc + (Number(v.anticipo) || 0), 0);
 
+  const libroData = useMemo(() => {
+    try {
+      return construirLibroExcel(ventas, tipoReporte, filtroSemana);
+    } catch (e) {
+      console.error('Error al construir libro Excel para previsualización:', e);
+      return { libro: null, filtradas: [], semanasOrdenadas: [], archivoNombre: 'reporte.xlsx' };
+    }
+  }, [ventas, tipoReporte, filtroSemana]);
+
   const ejecutarDescarga = () => {
     exportarExcelCliente(ventas, tipoReporte, filtroSemana);
   };
@@ -61,7 +71,7 @@ export default function PaginaExportacion({
                 Centro de Exportación de Reportes Excel
               </h2>
               <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748B' }}>
-                Genera el libro oficial con 3 hojas: Estadísticas de la semana, Ventas de Cabañas y Ventas de Actividades, optimizado para impresión en blanco y negro.
+                Genera el libro oficial con hoja de Métricas y hojas semanales en pares (Cabañas y Actividades), optimizado para lectura ejecutiva e impresión en blanco y negro.
               </p>
             </div>
           </div>
@@ -202,7 +212,7 @@ export default function PaginaExportacion({
               <span>Anticipos: <strong style={{ color: '#1D4ED8' }}>$${totalAnticipos.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</strong></span>
             </div>
             <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.78rem', color: '#64748B' }}>
-              El archivo descargará 3 hojas ejecutivas: Estadísticas, Cabañas y Actividades, preparadas con alto contraste para impresión física en blanco y negro.
+              El archivo descargará la hoja de Métricas e informes semanales individuales en pares (Cabañas y Actividades) con alto contraste monocromático.
             </p>
           </div>
 
@@ -218,6 +228,29 @@ export default function PaginaExportacion({
           </button>
         </div>
       </section>
+
+      {/* SECCIÓN DE PREVISUALIZACIÓN INTERACTIVA DEL LIBRO EXCEL */}
+      <section style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Icono nombre="eye" tamano={22} color="#15803D" />
+              <span>Vista Previa Interactiva del Libro Excel</span>
+            </h3>
+            <p style={{ margin: '3px 0 0 0', fontSize: '0.82rem', color: '#64748B' }}>
+              Navega entre las hojas del libro, inspecciona las celdas y totales en pantalla antes de realizar la descarga o impresión.
+            </p>
+          </div>
+        </div>
+
+        <VisorExcel
+          libro={libroData.libro}
+          archivoNombre={libroData.archivoNombre}
+          alDescargar={ejecutarDescarga}
+          cargandoDescarga={cargandoExcel}
+        />
+      </section>
     </div>
   );
 }
+

@@ -1351,7 +1351,7 @@ function generarHojaActividades(ventasActividades, infoSemana) {
 // Hoja 5: Actividades Semana 40
 // ... y así sucesivamente
 // ============================================================================
-export function exportarExcelCliente(ventas, tipo = 'todos', claveSemana = 'todas') {
+export function construirLibroExcel(ventas, tipo = 'todos', claveSemana = 'todas') {
   const semanaActual = obtenerInfoSemana(new Date());
   let filtradas = ventas;
 
@@ -1396,7 +1396,7 @@ export function exportarExcelCliente(ventas, tipo = 'todos', claveSemana = 'toda
     semanasOrdenadas.push(semanaActual);
   }
 
-  const hayMultiplesAnos = new Set(semanasOrdenadas.map(s => s.anoSemana)).size > 1;
+  const hayMultiplesAnos = new Set(semanasOrdenadas.map((s) => s.anoSemana)).size > 1;
 
   // 3. Generar hojas semanales en pares alternados:
   // Cabañas Semana N, Actividades Semana N...
@@ -1429,5 +1429,10 @@ export function exportarExcelCliente(ventas, tipo = 'todos', claveSemana = 'toda
     ? `karinga-reporte-${claveSemana}-${fechaHoy}.xlsx`
     : `karinga-reporte-${tipo}-${fechaHoy}.xlsx`;
 
+  return { libro, filtradas, semanasOrdenadas, archivoNombre };
+}
+
+export function exportarExcelCliente(ventas, tipo = 'todos', claveSemana = 'todas') {
+  const { libro, archivoNombre } = construirLibroExcel(ventas, tipo, claveSemana);
   XLSX.writeFile(libro, archivoNombre);
 }
