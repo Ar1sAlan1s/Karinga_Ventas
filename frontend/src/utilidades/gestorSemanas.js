@@ -48,14 +48,18 @@ export function obtenerInfoSemana(fechaInput) {
   // Cálculo de número de semana ISO-8601
   const jueves = new Date(lunes);
   jueves.setDate(lunes.getDate() + 3);
-  const primerJueves = new Date(jueves.getFullYear(), 0, 4);
-  const primerLunesDelAno = new Date(primerJueves);
-  const diaPrimerJueves = primerJueves.getDay();
-  primerLunesDelAno.setDate(primerJueves.getDate() - (diaPrimerJueves === 0 ? 6 : diaPrimerJueves - 1));
-
-  const diffMs = jueves.getTime() - primerLunesDelAno.getTime();
-  const numeroSemana = 1 + Math.round(diffMs / (7 * 86400000));
+  jueves.setHours(0, 0, 0, 0);
   const anoSemana = jueves.getFullYear();
+
+  const primerJueves = new Date(anoSemana, 0, 4);
+  primerJueves.setHours(0, 0, 0, 0);
+  const diaPrimerJueves = primerJueves.getDay();
+  const primerLunesDelAno = new Date(primerJueves);
+  primerLunesDelAno.setDate(primerJueves.getDate() - (diaPrimerJueves === 0 ? 6 : diaPrimerJueves - 1));
+  primerLunesDelAno.setHours(0, 0, 0, 0);
+
+  const diffMs = lunes.getTime() - primerLunesDelAno.getTime();
+  const numeroSemana = 1 + Math.round(diffMs / (7 * 86400000));
 
   const formatearISO = (dt) => {
     const y = dt.getFullYear();
@@ -94,6 +98,7 @@ export function obtenerInfoSemana(fechaInput) {
     lunesFecha: lunes,
     domingoFecha: domingo,
     etiquetaCorta: `Semana ${numeroSemana}`,
+    etiquetaSemana: `Semana ${numeroSemana}`,
     etiquetaRango: `${formatearLegible(lunes)} - ${formatearLegible(domingo)} ${domingo.getFullYear()}`,
     etiquetaCompleta: `Semana ${numeroSemana} (${inicioMX} - ${finMX})`,
     etiquetaDetallada: `Semana ${numeroSemana}: Lunes ${inicioMX} al Domingo ${finMX}`,
@@ -111,8 +116,9 @@ export function obtenerSemanasDeVentas(ventas = []) {
   const mapaSemanas = {};
 
   ventas.forEach((v) => {
-    if (!v.fecha) return;
-    const info = obtenerInfoSemana(v.fecha);
+    const fechaRef = v.fecha_checkin || v.fecha || v.fecha_inicio;
+    if (!fechaRef) return;
+    const info = obtenerInfoSemana(fechaRef);
     if (!info) return;
 
     if (!mapaSemanas[info.claveSemana]) {

@@ -33,7 +33,8 @@ export default function PaginaExportacion({
   // Excluir semanas futuras (solo semanas finalizadas o semana actual)
   if (semanaActual) {
     ventasSeleccionadas = ventasSeleccionadas.filter((v) => {
-      const info = obtenerInfoSemana(v.fecha);
+      const fechaRef = v.fecha_checkin || v.fecha || v.fecha_inicio;
+      const info = obtenerInfoSemana(fechaRef);
       return info && info.claveSemana <= semanaActual.claveSemana;
     });
   }

@@ -32,56 +32,9 @@ const bordeTotal = {
 // ============================================================================
 // FUNCIONES AUXILIARES DE FECHAS, SEMANAS Y DETALLES
 // ============================================================================
-export function obtenerInfoSemana(fechaInput) {
-  if (!fechaInput) return null;
-  let d;
-  if (typeof fechaInput === 'string') {
-    const partes = fechaInput.split('T')[0].split('-');
-    if (partes.length === 3) {
-      d = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
-    } else {
-      d = new Date(fechaInput);
-    }
-  } else {
-    d = new Date(fechaInput);
-  }
-  if (isNaN(d.getTime())) return null;
+import { obtenerInfoSemana } from '../utilidades/gestorSemanas.js';
+export { obtenerInfoSemana };
 
-  const diaSemana = d.getDay();
-  const diffLunes = diaSemana === 0 ? -6 : 1 - diaSemana;
-  const lunes = new Date(d);
-  lunes.setDate(d.getDate() + diffLunes);
-  const domingo = new Date(lunes);
-  domingo.setDate(lunes.getDate() + 6);
-
-  const jueves = new Date(lunes);
-  jueves.setDate(lunes.getDate() + 3);
-  const primerJueves = new Date(jueves.getFullYear(), 0, 4);
-  const primerLunesDelAno = new Date(primerJueves);
-  const diaPrimerJueves = primerJueves.getDay();
-  primerLunesDelAno.setDate(primerJueves.getDate() - (diaPrimerJueves === 0 ? 6 : diaPrimerJueves - 1));
-
-  const diffMs = jueves.getTime() - primerLunesDelAno.getTime();
-  const numeroSemana = 1 + Math.round(diffMs / (7 * 86400000));
-  const anoSemana = jueves.getFullYear();
-
-  const formatearMX = (dt) => {
-    const day = String(dt.getDate()).padStart(2, '0');
-    const m = String(dt.getMonth() + 1).padStart(2, '0');
-    const y = dt.getFullYear();
-    return `${day}/${m}/${y}`;
-  };
-
-  return {
-    numeroSemana,
-    anoSemana,
-    claveSemana: `${anoSemana}-W${String(numeroSemana).padStart(2, '0')}`,
-    etiquetaSemana: `Semana ${numeroSemana}`,
-    inicioMX: formatearMX(lunes),
-    finMX: formatearMX(domingo),
-    etiquetaCompleta: `Semana ${numeroSemana} (${formatearMX(lunes)} - ${formatearMX(domingo)})`
-  };
-}
 
 function formatearTemporada(temporada) {
   switch (temporada) {
@@ -739,7 +692,8 @@ function generarHojaEstadisticas(ventas, claveSemana, semanaActual, tipoFiltro =
 
   const mapaSemanas = {};
   ventas.forEach((v) => {
-    const info = obtenerInfoSemana(v.fecha);
+    const fechaRef = v.fecha_checkin || v.fecha || v.fecha_inicio;
+    const info = obtenerInfoSemana(fechaRef);
     if (!info) return;
     if (semanaActual && info.claveSemana > semanaActual.claveSemana) return;
 
@@ -1358,7 +1312,8 @@ export function construirLibroExcel(ventas, tipo = 'todos', claveSemana = 'todas
   // 1. Excluir semanas futuras (solo semanas ya concluidas o semana actual)
   if (semanaActual) {
     filtradas = filtradas.filter((v) => {
-      const info = obtenerInfoSemana(v.fecha);
+      const fechaRef = v.fecha_checkin || v.fecha || v.fecha_inicio;
+      const info = obtenerInfoSemana(fechaRef);
       return info && info.claveSemana <= semanaActual.claveSemana;
     });
   }
@@ -1366,7 +1321,8 @@ export function construirLibroExcel(ventas, tipo = 'todos', claveSemana = 'todas
   // 2. Filtro por semana específica (si aplica)
   if (claveSemana && claveSemana !== 'todas') {
     filtradas = filtradas.filter((v) => {
-      const info = obtenerInfoSemana(v.fecha);
+      const fechaRef = v.fecha_checkin || v.fecha || v.fecha_inicio;
+      const info = obtenerInfoSemana(fechaRef);
       return info && info.claveSemana === claveSemana;
     });
   }
@@ -1380,7 +1336,8 @@ export function construirLibroExcel(ventas, tipo = 'todos', claveSemana = 'todas
   // 2. Extraer semanas únicas presentes en los datos
   const mapaSemanasUnicas = {};
   filtradas.forEach((v) => {
-    const info = obtenerInfoSemana(v.fecha);
+    const fechaRef = v.fecha_checkin || v.fecha || v.fecha_inicio;
+    const info = obtenerInfoSemana(fechaRef);
     if (info) {
       mapaSemanasUnicas[info.claveSemana] = info;
     }
@@ -1402,7 +1359,8 @@ export function construirLibroExcel(ventas, tipo = 'todos', claveSemana = 'todas
   // Cabañas Semana N, Actividades Semana N...
   semanasOrdenadas.forEach((sem) => {
     const ventasSemana = filtradas.filter((v) => {
-      const info = obtenerInfoSemana(v.fecha);
+      const fechaRef = v.fecha_checkin || v.fecha || v.fecha_inicio;
+      const info = obtenerInfoSemana(fechaRef);
       return info && info.claveSemana === sem.claveSemana;
     });
 
