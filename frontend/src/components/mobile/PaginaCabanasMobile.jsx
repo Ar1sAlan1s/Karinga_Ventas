@@ -267,7 +267,7 @@ export default function PaginaCabanasMobile({
           }}
         >
           <Icono nombre="bed" tamano={16} color="currentColor" />
-          <span>Nueva Reserva</span>
+          <span>+ Nueva Reserva</span>
         </button>
 
         <button
@@ -387,6 +387,25 @@ export default function PaginaCabanasMobile({
                     Ver todas las semanas ({reservacionesPendientes.length})
                   </button>
                 )}
+                <button
+                  type="button"
+                  className="karinga-mobile-empty-action"
+                  style={{
+                    marginTop: '0.65rem',
+                    background: '#15803D',
+                    color: '#FFFFFF',
+                    borderColor: '#15803D',
+                    fontWeight: 600,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.4rem'
+                  }}
+                  onClick={() => setSubpestana('nueva')}
+                >
+                  <Icono nombre="bed" tamano={15} color="#FFFFFF" />
+                  <span>+ Registrar Nueva Reservación</span>
+                </button>
               </div>
             ) : (
               reservacionesMostradas.map((reserva) => {

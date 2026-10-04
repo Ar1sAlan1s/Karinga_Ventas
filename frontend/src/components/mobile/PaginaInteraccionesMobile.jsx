@@ -376,6 +376,25 @@ export default function PaginaInteraccionesMobile({
         </div>
       </div>
 
+      {/* Indicador de ayuda cuando no hay items seleccionados */}
+      {totalGeneral === 0 && (
+        <div style={{
+          margin: '1rem 0 5rem 0',
+          padding: '0.85rem 1rem',
+          background: '#F0FDF4',
+          border: '1px dashed #86EFAC',
+          borderRadius: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.65rem',
+          color: '#166534',
+          fontSize: '0.82rem'
+        }}>
+          <Icono nombre="nature" tamano={18} color="#16A34A" />
+          <span>Toca <strong>+</strong> en cualquier entrada o actividad para calcular y cobrar.</span>
+        </div>
+      )}
+
       {/* Barra Flotante de Cobro en Actividades */}
       {totalGeneral > 0 && (
         <div className="karinga-mobile-floating-bar">
