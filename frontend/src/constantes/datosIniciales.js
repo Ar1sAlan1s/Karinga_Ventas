@@ -147,7 +147,25 @@ export const OPCIONES_TEMPORADA = [
 
 export const METODOS_PAGO = [
   { id: 'Efectivo', etiqueta: 'Efectivo' },
+  { id: 'Tarjeta Zettle', etiqueta: 'Tarjeta Zettle' },
+  { id: 'Web', etiqueta: 'Web' },
   { id: 'Transferencia BBVA', etiqueta: 'Transferencia BBVA' },
-  { id: 'Transferencia Bajío', etiqueta: 'Transferencia Bajío' },
-  { id: 'Tarjeta', etiqueta: 'Tarjeta' }
+  { id: 'Transferencia Bajío', etiqueta: 'Transferencia Bajío' }
+];
+
+export const METODOS_PAGO_ANTICIPO = [
+  'Transferencia BBVA',
+  'Transferencia Bajío',
+  'Airbnb',
+  'Tarjeta Zettle',
+  'Web',
+  'Efectivo'
+];
+
+export const METODOS_PAGO_LIQUIDACION = [
+  'Efectivo',
+  'Tarjeta Zettle',
+  'Web',
+  'Transferencia BBVA',
+  'Transferencia Bajío'
 ];

@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import Icono from '../Icono';
 import ModalSincronizarCalendario from '../ModalSincronizarCalendario';
 import { sincronizarCalendariosApi } from '../../servicios/api';
-import { METODOS_PAGO } from '../../constantes/datosIniciales';
+import { METODOS_PAGO, METODOS_PAGO_ANTICIPO, METODOS_PAGO_LIQUIDACION } from '../../constantes/datosIniciales';
 import { calcularNoches, calcularFechaCheckout } from '../../utilidades/gestorNoches';
 import {
   determinarInfoFecha,
@@ -15,6 +15,15 @@ import {
   obtenerProximaSemana,
   estaReservaEnSemana
 } from '../../utilidades/gestorSemanas';
+
+const obtenerIconoPago = (metodo) => {
+  if (!metodo) return 'cash';
+  if (metodo.includes('Efectivo')) return 'cash';
+  if (metodo.includes('Tarjeta') || metodo.includes('Zettle')) return 'credit-card';
+  if (metodo.includes('Web')) return 'web';
+  if (metodo.includes('Airbnb')) return 'bed';
+  return 'bank';
+};
 
 export default function PaginaCabanasMobile({
   cabanas = [],
@@ -596,7 +605,7 @@ export default function PaginaCabanasMobile({
                 <div className="karinga-mobile-field-block">
                   <label className="karinga-mobile-label">Forma de Pago del Anticipo:</label>
                   <div className="karinga-mobile-payment-options">
-                    {['Transferencia BBVA', 'Transferencia Bajío', 'Efectivo', 'Tarjeta en Terminal'].map((met) => (
+                    {METODOS_PAGO_ANTICIPO.map((met) => (
                       <button
                         key={met}
                         type="button"
@@ -604,7 +613,7 @@ export default function PaginaCabanasMobile({
                         onClick={() => setMetodoPagoAnticipoCheckin(met)}
                       >
                         <Icono
-                          nombre={met.includes('Efectivo') ? 'coins' : met.includes('Tarjeta') ? 'credit-card' : 'building-bank'}
+                          nombre={obtenerIconoPago(met)}
                           tamano={15}
                           color="currentColor"
                         />
@@ -672,7 +681,7 @@ export default function PaginaCabanasMobile({
             <div className="karinga-mobile-field-block">
               <label className="karinga-mobile-label">Método de Pago de la Liquidación:</label>
               <div className="karinga-mobile-payment-options">
-                {['Efectivo', 'Tarjeta en Terminal', 'Transferencia BBVA', 'Transferencia Bajío'].map((met) => (
+                {METODOS_PAGO_LIQUIDACION.map((met) => (
                   <button
                     key={met}
                     type="button"
@@ -680,7 +689,7 @@ export default function PaginaCabanasMobile({
                     onClick={() => setMetodoPagoLiquidacion(met)}
                   >
                     <Icono
-                      nombre={met.includes('Efectivo') ? 'coins' : met.includes('Tarjeta') ? 'credit-card' : 'building-bank'}
+                      nombre={obtenerIconoPago(met)}
                       tamano={15}
                       color="currentColor"
                     />
@@ -906,7 +915,7 @@ export default function PaginaCabanasMobile({
                 <div className="karinga-mobile-field-block">
                   <label className="karinga-mobile-label">Forma de Pago del Anticipo:</label>
                   <div className="karinga-mobile-payment-options">
-                    {['Transferencia BBVA', 'Transferencia Bajío', 'Efectivo', 'Tarjeta en Terminal'].map((met) => (
+                    {METODOS_PAGO_ANTICIPO.map((met) => (
                       <button
                         key={met}
                         type="button"
@@ -914,7 +923,7 @@ export default function PaginaCabanasMobile({
                         onClick={() => setNuevoMetodoPago(met)}
                       >
                         <Icono
-                          nombre={met.includes('Efectivo') ? 'coins' : met.includes('Tarjeta') ? 'credit-card' : 'building-bank'}
+                          nombre={obtenerIconoPago(met)}
                           tamano={15}
                           color="currentColor"
                         />
@@ -955,7 +964,7 @@ export default function PaginaCabanasMobile({
                 <div className="karinga-mobile-field-block">
                   <label className="karinga-mobile-label">Forma de Pago del Total:</label>
                   <div className="karinga-mobile-payment-options">
-                    {['Efectivo', 'Tarjeta en Terminal', 'Transferencia BBVA', 'Transferencia Bajío'].map((met) => (
+                    {METODOS_PAGO_LIQUIDACION.map((met) => (
                       <button
                         key={met}
                         type="button"
@@ -963,7 +972,7 @@ export default function PaginaCabanasMobile({
                         onClick={() => setNuevoMetodoPago(met)}
                       >
                         <Icono
-                          nombre={met.includes('Efectivo') ? 'coins' : met.includes('Tarjeta') ? 'credit-card' : 'building-bank'}
+                          nombre={obtenerIconoPago(met)}
                           tamano={15}
                           color="currentColor"
                         />
@@ -1073,8 +1082,8 @@ export default function PaginaCabanasMobile({
                 value={metodoPagoExtras}
                 onChange={(e) => setMetodoPagoExtras(e.target.value)}
               >
-                {METODOS_PAGO.map((m) => (
-                  <option key={m} value={m}>{m}</option>
+                {METODOS_PAGO_LIQUIDACION.map((met) => (
+                  <option key={met} value={met}>{met}</option>
                 ))}
               </select>
             </div>

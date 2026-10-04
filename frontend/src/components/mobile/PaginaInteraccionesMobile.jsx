@@ -1,11 +1,20 @@
 import { useState } from 'react';
 import Icono from '../Icono';
-import { TARIFAS_ACTIVIDADES, METODOS_PAGO } from '../../constantes/datosIniciales';
+import { TARIFAS_ACTIVIDADES, METODOS_PAGO, METODOS_PAGO_LIQUIDACION } from '../../constantes/datosIniciales';
 import {
   determinarInfoFecha,
   formatearFechaConDia,
   formatearHora12
 } from '../../utilidades/gestorTemporadas';
+
+const obtenerIconoPago = (metodo) => {
+  if (!metodo) return 'cash';
+  if (metodo.includes('Efectivo')) return 'cash';
+  if (metodo.includes('Tarjeta') || metodo.includes('Zettle')) return 'credit-card';
+  if (metodo.includes('Web')) return 'web';
+  if (metodo.includes('Airbnb')) return 'bed';
+  return 'bank';
+};
 
 export default function PaginaInteraccionesMobile({
   alRegistrar,
@@ -501,7 +510,7 @@ export default function PaginaInteraccionesMobile({
             <div className="karinga-mobile-field-block">
               <label className="karinga-mobile-label">Forma de Pago:</label>
               <div className="karinga-mobile-payment-options">
-                {['Efectivo', 'Tarjeta en Terminal', 'Transferencia BBVA', 'Transferencia Bajío'].map((met) => (
+                {METODOS_PAGO_LIQUIDACION.map((met) => (
                   <button
                     key={met}
                     type="button"
@@ -509,7 +518,7 @@ export default function PaginaInteraccionesMobile({
                     onClick={() => setMetodoPago(met)}
                   >
                     <Icono
-                      nombre={met.includes('Efectivo') ? 'coins' : met.includes('Tarjeta') ? 'credit-card' : 'building-bank'}
+                      nombre={obtenerIconoPago(met)}
                       tamano={16}
                       color="currentColor"
                     />
