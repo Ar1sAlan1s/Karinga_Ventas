@@ -404,6 +404,7 @@ export default function App() {
           alExportarExcel={manejarExportarExcel}
           cargandoExcel={cargandoExcel}
           alCambiarPagina={setPaginaActiva}
+          esMovil={esVistaMovilActiva}
         />
       )}
 

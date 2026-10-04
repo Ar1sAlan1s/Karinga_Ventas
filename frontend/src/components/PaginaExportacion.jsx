@@ -3,14 +3,20 @@ import Icono from './Icono';
 import VisorExcel from './VisorExcel';
 import { exportarExcelCliente, construirLibroExcel } from '../servicios/exportarExcel';
 import { obtenerSemanasDeVentas, filtrarVentasPorSemana, obtenerInfoSemana, obtenerSemanaActual } from '../utilidades/gestorSemanas';
+import { useIsMobile } from '../utilidades/useIsMobile';
 
 export default function PaginaExportacion({
   ventas = [],
   cargandoExcel,
-  alCambiarPagina
+  alCambiarPagina,
+  esMovil: esMovilProp
 }) {
+  const isMobileScreen = useIsMobile(768);
+  const esModoMovil = esMovilProp !== undefined ? esMovilProp : isMobileScreen;
+
   const [tipoReporte, setTipoReporte] = useState('todos'); // 'todos', 'cabanas', 'interacciones'
   const [filtroSemana, setFiltroSemana] = useState('todas'); // 'todas' o 'YYYY-Wnn'
+
 
   const semanaActual = useMemo(() => obtenerSemanaActual(), []);
 
@@ -59,16 +65,24 @@ export default function PaginaExportacion({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div
+      className={esModoMovil ? 'karinga-mobile-page' : ''}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: esModoMovil ? '1rem' : '1.5rem',
+        paddingBottom: esModoMovil ? '80px' : undefined
+      }}
+    >
       {/* Cabecera Principal */}
-      <section className="karinga-tarjeta" style={{ padding: '1.5rem' }}>
+      <section className="karinga-tarjeta" style={{ padding: esModoMovil ? '1.1rem' : '1.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{ background: '#DCFCE7', padding: '0.65rem', borderRadius: '12px', display: 'flex', alignItems: 'center' }}>
               <Icono nombre="excel" tamano={28} color="#15803D" />
             </div>
             <div>
-              <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+              <h2 style={{ fontSize: esModoMovil ? '1.15rem' : '1.3rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
                 Centro de Exportación de Reportes Excel
               </h2>
               <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748B' }}>
@@ -77,7 +91,7 @@ export default function PaginaExportacion({
             </div>
           </div>
 
-          {alCambiarPagina && (
+          {!esModoMovil && alCambiarPagina && (
             <button
               type="button"
               className="karinga-btn-secundario"
@@ -92,7 +106,7 @@ export default function PaginaExportacion({
       </section>
 
       {/* SELECTOR DE PERÍODO / SEMANA DE LA EMPRESA */}
-      <section className="karinga-tarjeta" style={{ padding: '1.25rem' }}>
+      <section className="karinga-tarjeta" style={{ padding: esModoMovil ? '1rem' : '1.25rem' }}>
         <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#334155', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Icono nombre="calendar" tamano={18} color="var(--verde-oscuro)" />
           <span>Seleccione el Período / Semana de la Empresa</span>
@@ -102,12 +116,12 @@ export default function PaginaExportacion({
         </p>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-          <div style={{ minWidth: '300px', flex: '1', maxWidth: '450px' }}>
+          <div style={{ minWidth: esModoMovil ? '100%' : '260px', flex: '1', maxWidth: '450px', width: '100%' }}>
             <select
               className="karinga-select"
               value={filtroSemana}
               onChange={(e) => setFiltroSemana(e.target.value)}
-              style={{ fontWeight: 600 }}
+              style={{ fontWeight: 600, width: '100%' }}
             >
               <option value="todas">Todas las Semanas Concluidas y Semana Actual</option>
               {semanasDisponibles.map((s) => {
@@ -222,7 +236,12 @@ export default function PaginaExportacion({
             className="karinga-btn-excel"
             onClick={ejecutarDescarga}
             disabled={cargandoExcel || ventasSeleccionadas.length === 0}
-            style={{ padding: '0.75rem 1.5rem', fontSize: '0.95rem' }}
+            style={{
+              padding: esModoMovil ? '0.85rem 1rem' : '0.75rem 1.5rem',
+              fontSize: '0.95rem',
+              width: esModoMovil ? '100%' : 'auto',
+              justifyContent: 'center'
+            }}
           >
             <Icono nombre="excel" tamano={20} />
             <span>{cargandoExcel ? 'Generando Excel...' : 'Descargar Archivo Excel (.xlsx)'}</span>
@@ -230,27 +249,29 @@ export default function PaginaExportacion({
         </div>
       </section>
 
-      {/* SECCIÓN DE PREVISUALIZACIÓN INTERACTIVA DEL LIBRO EXCEL */}
-      <section style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Icono nombre="eye" tamano={22} color="#15803D" />
-              <span>Vista Previa Interactiva del Libro Excel</span>
-            </h3>
-            <p style={{ margin: '3px 0 0 0', fontSize: '0.82rem', color: '#64748B' }}>
-              Navega entre las hojas del libro, inspecciona las celdas y totales en pantalla antes de realizar la descarga o impresión.
-            </p>
+      {/* SECCIÓN DE PREVISUALIZACIÓN INTERACTIVA DEL LIBRO EXCEL (EXCLUSIVA PARA VISTA DE PC / ESCRITORIO) */}
+      {!esModoMovil && (
+        <section style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Icono nombre="eye" tamano={22} color="#15803D" />
+                <span>Vista Previa Interactiva del Libro Excel</span>
+              </h3>
+              <p style={{ margin: '3px 0 0 0', fontSize: '0.82rem', color: '#64748B' }}>
+                Navega entre las hojas del libro, inspecciona las celdas y totales en pantalla antes de realizar la descarga o impresión.
+              </p>
+            </div>
           </div>
-        </div>
 
-        <VisorExcel
-          libro={libroData.libro}
-          archivoNombre={libroData.archivoNombre}
-          alDescargar={ejecutarDescarga}
-          cargandoDescarga={cargandoExcel}
-        />
-      </section>
+          <VisorExcel
+            libro={libroData.libro}
+            archivoNombre={libroData.archivoNombre}
+            alDescargar={ejecutarDescarga}
+            cargandoDescarga={cargandoExcel}
+          />
+        </section>
+      )}
     </div>
   );
 }
