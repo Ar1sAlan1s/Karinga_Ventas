@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: karinga-backend
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: AUTO_MIGRATE
+        value: "true"
+      - key: DATABASE_URL
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REFRESH_TOKEN
+        sync: false
+      - key: CALENDAR_BUENAVISTA_ID
+        sync: false
+      - key: CALENDAR_CHUPICUARO_ID
+        sync: false
+      - key: CALENDAR_JANITZIO_ID
+        sync: false
+      - key: CALENDAR_PACANDA_ID
+        sync: false
+      - key: CALENDAR_SANTAFE_ID
+        sync: false
+      - key: CALENDAR_TECUEN_ID
+        sync: false
+      - key: CALENDAR_TECUENITA_ID
+        sync: false
+      - key: CALENDAR_YUNUEN_ID
+        sync: false
+      - key: CALENDAR_ERANDINI_ID
+        sync: false
+      - key: CALENDAR_IREKANI_ID
+        sync: false
+      - key: CALENDAR_JARACUARO_ID
+        sync: false
+      - key: CALENDAR_URANDEN_ID
+        sync: false

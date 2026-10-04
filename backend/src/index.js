@@ -14,9 +14,9 @@ async function iniciarServidor() {
       console.warn('[AVISO] DATABASE_URL no está definida en las variables de entorno.');
     }
 
-    app.listen(PUERTO, () => {
+    app.listen(PUERTO, '0.0.0.0', () => {
       console.log(`🌲 Servidor Karinga Backend activo en el puerto ${PUERTO}`);
-      console.log(`📍 Endpoint base: http://localhost:${PUERTO}/api`);
+      console.log(`📍 Endpoint base: http://0.0.0.0:${PUERTO}/api`);
     });
   } catch (error) {
     console.error('Error fatal al iniciar el servidor:', error);

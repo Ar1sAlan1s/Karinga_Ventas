@@ -1,5 +1,10 @@
 {
-  "dependencies": {
-    "xlsx": "^0.18.5"
+  "name": "karinga-ventas",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "npm --prefix backend start",
+    "build": "npm --prefix backend install",
+    "postinstall": "npm --prefix backend install"
   }
 }
