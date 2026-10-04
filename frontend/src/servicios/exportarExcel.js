@@ -215,7 +215,6 @@ function celdaHeader(titulo, fondo = COLOR_GRIS_ENCABEZADO, align = 'center') {
 
 function celdaEstado(estado) {
   const esLiquidado = estado === 'liquidado';
-  // Formato de alto contraste: corchetes e indicativo textual para impresión B/W
   const texto = esLiquidado ? '[✓ LIQUIDADO]' : '[ ! PENDIENTE ]';
   const bg = esLiquidado ? COLOR_GRIS_CLARO_BG : COLOR_BLANCO;
   const borde = esLiquidado
@@ -319,7 +318,7 @@ function crearFilaVacia(totalColumnas) {
 }
 
 // ============================================================================
-// HOJA 1: ESTADÍSTICAS DE LA SEMANA (O CONSOLIDADO SEMANAL)
+// HOJA 1: MÉTRICAS (ESTADÍSTICAS OPERATIVAS)
 // ============================================================================
 function generarHojaEstadisticas(ventas, claveSemana, semanaActual, tipoFiltro = 'todos') {
   const TOTAL_COLS = 10;
@@ -332,7 +331,7 @@ function generarHojaEstadisticas(ventas, claveSemana, semanaActual, tipoFiltro =
     : 'Consolidado de Semanas Concluidas y Semana Actual';
 
   // Fila 0: Banner
-  rows.push(crearFilaBanner('RANCHO KARINGA • ESTADÍSTICAS Y MÉTRICAS OPERATIVAS', TOTAL_COLS));
+  rows.push(crearFilaBanner('RANCHO KARINGA • MÉTRICAS Y ESTADÍSTICAS OPERATIVAS', TOTAL_COLS));
   merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: TOTAL_COLS - 1 } });
 
   // Fila 1: Subtítulo
@@ -463,8 +462,8 @@ function generarHojaEstadisticas(ventas, claveSemana, semanaActual, tipoFiltro =
   const filaKpiVal2   = [];
   const rInicioKpi2   = rows.length;
 
-  agregarKpiCard(filaKpiLabel2, filaKpiVal2, rInicioKpi2, 'ANTICIPOS RECIBIDOS (PAGO 1)', totalAnticiposSum, 3, true);
-  agregarKpiCard(filaKpiLabel2, filaKpiVal2, rInicioKpi2, 'LIQUIDADO EN RECEPCIÓN (PAGO 2)', totalLiquidadoSum, 3, true);
+  agregarKpiCard(filaKpiLabel2, filaKpiVal2, rInicioKpi2, 'ANTICIPOS RECIBIDOS (P1)', totalAnticiposSum, 3, true);
+  agregarKpiCard(filaKpiLabel2, filaKpiVal2, rInicioKpi2, 'LIQUIDADO EN RECEPCIÓN (P2)', totalLiquidadoSum, 3, true);
   agregarKpiCard(filaKpiLabel2, filaKpiVal2, rInicioKpi2, 'SALDO PENDIENTE POR COBRAR', totalSaldoPendienteSum, 2, true);
   agregarKpiCard(filaKpiLabel2, filaKpiVal2, rInicioKpi2, 'OPERACIONES TOTALES', `${ventas.length} ventas (${totalNochesSum} noches)`, 2, false);
   rows.push(filaKpiLabel2);
@@ -678,7 +677,7 @@ function generarHojaEstadisticas(ventas, claveSemana, semanaActual, tipoFiltro =
   ventas.forEach((v) => {
     const info = obtenerInfoSemana(v.fecha);
     if (!info) return;
-    if (semanaActual && info.claveSemana > semanaActual.claveSemana) return; // Excluir futuras
+    if (semanaActual && info.claveSemana > semanaActual.claveSemana) return;
 
     if (!mapaSemanas[info.claveSemana]) {
       mapaSemanas[info.claveSemana] = {
@@ -710,7 +709,8 @@ function generarHojaEstadisticas(ventas, claveSemana, semanaActual, tipoFiltro =
     item.totalRecaudado += (Number(v.total) || (ant + montoLiq + dano.monto));
   });
 
-  const datosSemanas = Object.values(mapaSemanas).sort((a, b) => b.claveSemana.localeCompare(a.claveSemana));
+  // Orden ascendente cronológico para coincidir con la secuencia de pestañas semanales
+  const datosSemanas = Object.values(mapaSemanas).sort((a, b) => a.claveSemana.localeCompare(b.claveSemana));
   let sMov = 0; let sCab = 0; let sAct = 0; let sAnt = 0; let sLiq = 0; let sDan = 0; let sTot = 0;
 
   datosSemanas.forEach((s, idx) => {
@@ -768,7 +768,6 @@ function generarHojaEstadisticas(ventas, claveSemana, semanaActual, tipoFiltro =
     { wch: 24 }  // Col 9: TOTAL RECAUDADO
   ];
 
-  // Configuración de impresión horizontal y carta
   ws['!pageSetup'] = { orientation: 'landscape', paperSize: 1 };
   ws['!views'] = [{ state: 'frozen', xSplit: 0, ySplit: 3 }];
 
@@ -776,21 +775,24 @@ function generarHojaEstadisticas(ventas, claveSemana, semanaActual, tipoFiltro =
 }
 
 // ============================================================================
-// HOJA 2: VENTAS DE CABAÑAS (HOSPEDAJE COMPLETO)
+// HOJA INDIVIDUAL: VENTAS DE CABAÑAS (POR SEMANA O GENERAL)
 // ============================================================================
-function generarHojaCabanas(ventasCabanas, claveSemana) {
+function generarHojaCabanas(ventasCabanas, infoSemana) {
   const TOTAL_COLS = 27;
   const hoyStr = new Date().toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' });
-  const periodoEtiqueta = claveSemana && claveSemana !== 'todas' ? `Período: ${claveSemana}` : 'Semanas Concluidas y Semana Actual';
+  const etiquetaSemana = infoSemana
+    ? `Semana ${infoSemana.numeroSemana} (${infoSemana.inicioMX} al ${infoSemana.finMX})`
+    : 'Semanas Concluidas y Semana Actual';
+
   const rows = [];
   const merges = [];
 
   // Fila 0: Banner
-  rows.push(crearFilaBanner('RANCHO KARINGA • REPORTE OPERATIVO DE CABAÑAS Y HOSPEDAJE', TOTAL_COLS));
+  rows.push(crearFilaBanner(`RANCHO KARINGA • CABAÑAS Y HOSPEDAJE - ${infoSemana ? `SEMANA ${infoSemana.numeroSemana}` : 'CONSOLIDADO'}`, TOTAL_COLS));
   merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: TOTAL_COLS - 1 } });
 
   // Fila 1: Subtítulo
-  rows.push(crearFilaSubtitulo(`${periodoEtiqueta}  |  Generado: ${hoyStr}  |  Moneda: MXN ($)  |  Sistema de Gestión Rancho Karinga`, TOTAL_COLS));
+  rows.push(crearFilaSubtitulo(`${etiquetaSemana}  |  Generado: ${hoyStr}  |  Moneda: MXN ($)  |  Sistema de Gestión Rancho Karinga`, TOTAL_COLS));
   merges.push({ s: { r: 1, c: 0 }, e: { r: 1, c: TOTAL_COLS - 1 } });
 
   // Fila 2: Separador
@@ -889,7 +891,7 @@ function generarHojaCabanas(ventasCabanas, claveSemana) {
   agregarKpiCard('ANTICIPOS (P1)', totalAnticiposSum, 5, true);
   agregarKpiCard('LIQUIDACIÓN RECEPCIÓN (P2)', totalLiquidadoSum, 5, true);
   agregarKpiCard('SALDO PENDIENTE', totalSaldoPendienteSum, 4, true);
-  agregarKpiCard('RESERVACIONES REGISTRADAS', `${ventasCabanas.length} (${totalNochesSum} Noches)`, 8, false);
+  agregarKpiCard('RESERVACIONES', `${ventasCabanas.length} (${totalNochesSum} Noches)`, 8, false);
 
   rows.push(filaKpiL);
   rows.push(filaKpiV);
@@ -914,7 +916,7 @@ function generarHojaCabanas(ventasCabanas, claveSemana) {
     celdaHeader('Costo P. Extra', COLOR_GRIS_SECUNDARIO, 'right'),
     celdaHeader('Daños Retenidos', COLOR_GRIS_SECUNDARIO, 'right'),
     celdaHeader('Descuento (%)', COLOR_GRIS_SECUNDARIO, 'right'),
-    celdaHeader('TOTAL GENERAL', COLOR_NEGRO_SOLIDO, 'right'), // Destacado negro sólido
+    celdaHeader('TOTAL GENERAL', COLOR_NEGRO_SOLIDO, 'right'),
     celdaHeader('Estado de Pago', COLOR_GRIS_ENCABEZADO),
     celdaHeader('Anticipo (P1)', COLOR_GRIS_SECUNDARIO, 'right'),
     celdaHeader('Método Anticipo', COLOR_GRIS_SECUNDARIO),
@@ -928,72 +930,82 @@ function generarHojaCabanas(ventasCabanas, claveSemana) {
   rows.push(filaEncabezados);
 
   // Filas de Registros de Cabañas
-  ventasCabanas.forEach((v, idx) => {
-    const anticipo = Number(v.anticipo) || 0;
-    const saldoPendiente = Number(v.saldo_pendiente) || 0;
-    const descuento = Number(v.descuento_especial) || 0;
-    const montoLiquidado = Number(v.monto_liquidado) || 0;
-    const infoSem = obtenerInfoSemana(v.fecha);
-    const fondoZebra = idx % 2 === 1 ? COLOR_ZEBRA_BG : null;
-
-    const hExtra = Number(v.horas_extra) || 0;
-    const cHExtra = Number(v.costo_horas_extra) || (hExtra * 250);
-    const pExtra = Number(v.personas_extra) || 0;
-    const cPExtra = Number(v.costo_personas_extra) || (pExtra * 250);
-    const cNoches = Number(v.costo_cabana) || 0;
-    const danoObj = obtenerDanoDeposito(v);
-    const montoDano = danoObj.monto;
-    const totCabana = cNoches + cPExtra + cHExtra;
-    const granTotal = Math.max(totCabana - descuento + montoDano, Number(v.total) || 0, anticipo + montoLiquidado + saldoPendiente + montoDano);
-
-    const saldoEfectivo = v.estado_pago === 'liquidado' ? 0 : (saldoPendiente > 0 ? saldoPendiente : Math.max(0, granTotal - anticipo));
-    const liqEfectiva = v.estado_pago === 'liquidado'
-      ? (montoLiquidado > 0 ? montoLiquidado : (anticipo > 0 ? Math.max(0, granTotal - anticipo) : granTotal))
-      : montoLiquidado;
-
-    let porcentajeDescuento = 0;
-    if (v.tipo_descuento === 'porcentaje' && Number(v.valor_descuento) > 0) {
-      porcentajeDescuento = Number(v.valor_descuento) / 100;
-    } else if (descuento > 0) {
-      const subtotalBase = granTotal + descuento;
-      porcentajeDescuento = subtotalBase > 0 ? (descuento / subtotalBase) : 0;
+  if (ventasCabanas.length === 0) {
+    const rVacio = rows.length;
+    const filaVaciaTexto = [celdaTexto('No se registraron reservaciones de cabañas en este período.', 'center', true)];
+    for (let c = 1; c < TOTAL_COLS; c++) {
+      filaVaciaTexto.push(celdaTexto('', 'center'));
     }
+    rows.push(filaVaciaTexto);
+    merges.push({ s: { r: rVacio, c: 0 }, e: { r: rVacio, c: TOTAL_COLS - 1 } });
+  } else {
+    ventasCabanas.forEach((v, idx) => {
+      const anticipo = Number(v.anticipo) || 0;
+      const saldoPendiente = Number(v.saldo_pendiente) || 0;
+      const descuento = Number(v.descuento_especial) || 0;
+      const montoLiquidado = Number(v.monto_liquidado) || 0;
+      const infoSem = obtenerInfoSemana(v.fecha);
+      const fondoZebra = idx % 2 === 1 ? COLOR_ZEBRA_BG : null;
 
-    const fechaCheckinStr = v.fecha_checkin ? `${formatearFecha(v.fecha_checkin)} 15:00` : `${formatearFecha(v.fecha)} 15:00`;
-    const fechaCheckoutStr = v.fecha_checkout ? `${formatearFecha(v.fecha_checkout)} ${v.hora_checkout || '12:00'}` : '-';
+      const hExtra = Number(v.horas_extra) || 0;
+      const cHExtra = Number(v.costo_horas_extra) || (hExtra * 250);
+      const pExtra = Number(v.personas_extra) || 0;
+      const cPExtra = Number(v.costo_personas_extra) || (pExtra * 250);
+      const cNoches = Number(v.costo_cabana) || 0;
+      const danoObj = obtenerDanoDeposito(v);
+      const montoDano = danoObj.monto;
+      const totCabana = cNoches + cPExtra + cHExtra;
+      const granTotal = Math.max(totCabana - descuento + montoDano, Number(v.total) || 0, anticipo + montoLiquidado + saldoPendiente + montoDano);
 
-    rows.push([
-      celdaNumero(idx + 1, false, fondoZebra),
-      celdaTexto(formatearFecha(v.fecha), 'center', false, fondoZebra),
-      celdaTexto(v.hora || '', 'center', false, fondoZebra),
-      celdaTexto(infoSem ? infoSem.etiquetaSemana : '-', 'center', false, fondoZebra),
-      celdaTexto(v.nombre_reservacion || '-', 'left', true, fondoZebra),
-      celdaTexto(obtenerNombreConcepto(v), 'left', false, fondoZebra),
-      celdaTexto(formatearTemporada(v.temporada), 'center', false, fondoZebra),
-      celdaNumero(Number(v.noches) || 1, false, fondoZebra),
-      celdaTexto(fechaCheckinStr, 'center', false, fondoZebra),
-      celdaTexto(fechaCheckoutStr, 'center', false, fondoZebra),
-      celdaMoneda(cNoches, false, fondoZebra),
-      celdaTexto(hExtra > 0 ? `+${hExtra}h` : '-', 'center', false, fondoZebra),
-      celdaMoneda(cHExtra, false, fondoZebra),
-      celdaTexto(pExtra > 0 ? `+${pExtra}` : '-', 'center', false, fondoZebra),
-      celdaMoneda(cPExtra, false, fondoZebra),
-      celdaMoneda(montoDano, false, fondoZebra),
-      porcentajeDescuento > 0
-        ? celdaPorcentaje(porcentajeDescuento, true, fondoZebra, bordeFino, COLOR_NEGRO_SOLIDO)
-        : celdaTexto('-', 'center', false, fondoZebra),
-      celdaMoneda(granTotal, true, COLOR_GRIS_CLARO_BG, COLOR_NEGRO_SOLIDO),
-      celdaEstado(v.estado_pago),
-      celdaMoneda(anticipo, anticipo > 0, fondoZebra),
-      celdaTexto(v.metodo_pago_anticipo || (anticipo > 0 ? v.metodo_pago : '-'), 'center', false, fondoZebra),
-      celdaTexto(v.comprobante_anticipo || '-', 'left', false, fondoZebra),
-      celdaMoneda(saldoEfectivo, saldoEfectivo > 0, fondoZebra),
-      celdaMoneda(liqEfectiva, liqEfectiva > 0, fondoZebra),
-      celdaTexto(v.metodo_pago_liquidacion || (v.estado_pago === 'liquidado' ? v.metodo_pago : '-'), 'center', false, fondoZebra),
-      celdaTexto(v.comprobante_pago || '-', 'left', false, fondoZebra),
-      celdaTexto('', 'left', false, fondoZebra) // Observaciones vacía
-    ]);
-  });
+      const saldoEfectivo = v.estado_pago === 'liquidado' ? 0 : (saldoPendiente > 0 ? saldoPendiente : Math.max(0, granTotal - anticipo));
+      const liqEfectiva = v.estado_pago === 'liquidado'
+        ? (montoLiquidado > 0 ? montoLiquidado : (anticipo > 0 ? Math.max(0, granTotal - anticipo) : granTotal))
+        : montoLiquidado;
+
+      let porcentajeDescuento = 0;
+      if (v.tipo_descuento === 'porcentaje' && Number(v.valor_descuento) > 0) {
+        porcentajeDescuento = Number(v.valor_descuento) / 100;
+      } else if (descuento > 0) {
+        const subtotalBase = granTotal + descuento;
+        porcentajeDescuento = subtotalBase > 0 ? (descuento / subtotalBase) : 0;
+      }
+
+      const fechaCheckinStr = v.fecha_checkin ? `${formatearFecha(v.fecha_checkin)} 15:00` : `${formatearFecha(v.fecha)} 15:00`;
+      const fechaCheckoutStr = v.fecha_checkout ? `${formatearFecha(v.fecha_checkout)} ${v.hora_checkout || '12:00'}` : '-';
+
+      rows.push([
+        celdaNumero(idx + 1, false, fondoZebra),
+        celdaTexto(formatearFecha(v.fecha), 'center', false, fondoZebra),
+        celdaTexto(v.hora || '', 'center', false, fondoZebra),
+        celdaTexto(infoSem ? infoSem.etiquetaSemana : '-', 'center', false, fondoZebra),
+        celdaTexto(v.nombre_reservacion || '-', 'left', true, fondoZebra),
+        celdaTexto(obtenerNombreConcepto(v), 'left', false, fondoZebra),
+        celdaTexto(formatearTemporada(v.temporada), 'center', false, fondoZebra),
+        celdaNumero(Number(v.noches) || 1, false, fondoZebra),
+        celdaTexto(fechaCheckinStr, 'center', false, fondoZebra),
+        celdaTexto(fechaCheckoutStr, 'center', false, fondoZebra),
+        celdaMoneda(cNoches, false, fondoZebra),
+        celdaTexto(hExtra > 0 ? `+${hExtra}h` : '-', 'center', false, fondoZebra),
+        celdaMoneda(cHExtra, false, fondoZebra),
+        celdaTexto(pExtra > 0 ? `+${pExtra}` : '-', 'center', false, fondoZebra),
+        celdaMoneda(cPExtra, false, fondoZebra),
+        celdaMoneda(montoDano, false, fondoZebra),
+        porcentajeDescuento > 0
+          ? celdaPorcentaje(porcentajeDescuento, true, fondoZebra, bordeFino, COLOR_NEGRO_SOLIDO)
+          : celdaTexto('-', 'center', false, fondoZebra),
+        celdaMoneda(granTotal, true, COLOR_GRIS_CLARO_BG, COLOR_NEGRO_SOLIDO),
+        celdaEstado(v.estado_pago),
+        celdaMoneda(anticipo, anticipo > 0, fondoZebra),
+        celdaTexto(v.metodo_pago_anticipo || (anticipo > 0 ? v.metodo_pago : '-'), 'center', false, fondoZebra),
+        celdaTexto(v.comprobante_anticipo || '-', 'left', false, fondoZebra),
+        celdaMoneda(saldoEfectivo, saldoEfectivo > 0, fondoZebra),
+        celdaMoneda(liqEfectiva, liqEfectiva > 0, fondoZebra),
+        celdaTexto(v.metodo_pago_liquidacion || (v.estado_pago === 'liquidado' ? v.metodo_pago : '-'), 'center', false, fondoZebra),
+        celdaTexto(v.comprobante_pago || '-', 'left', false, fondoZebra),
+        celdaTexto('', 'left', false, fondoZebra)
+      ]);
+    });
+  }
 
   // Fila Final de Totales Cabañas
   const filaTotalIdx = rows.length;
@@ -1023,7 +1035,7 @@ function generarHojaCabanas(ventasCabanas, claveSemana) {
   filaTotales.push(celdaMoneda(totalPersonasExtraSum, true, COLOR_GRIS_TOTAL_BG, COLOR_NEGRO_SOLIDO, bordeTotal));
   filaTotales.push(celdaMoneda(totalDanosSum, true, COLOR_GRIS_TOTAL_BG, COLOR_NEGRO_SOLIDO, bordeTotal));
   filaTotales.push(porcentajeDescuentoGlobal > 0 ? celdaPorcentaje(porcentajeDescuentoGlobal, true, COLOR_GRIS_TOTAL_BG, bordeTotal, COLOR_NEGRO_SOLIDO) : celdaTexto('-', 'center', true, COLOR_GRIS_TOTAL_BG, COLOR_NEGRO_SOLIDO, bordeTotal));
-  filaTotales.push(celdaMoneda(totalGeneralSum, true, COLOR_NEGRO_SOLIDO, COLOR_BLANCO, bordeTotal, 11)); // Total destacado negro
+  filaTotales.push(celdaMoneda(totalGeneralSum, true, COLOR_NEGRO_SOLIDO, COLOR_BLANCO, bordeTotal, 11));
   filaTotales.push(celdaTexto('-', 'center', true, COLOR_GRIS_TOTAL_BG, COLOR_NEGRO_SOLIDO, bordeTotal));
   filaTotales.push(celdaMoneda(totalAnticiposSum, true, COLOR_GRIS_TOTAL_BG, COLOR_NEGRO_SOLIDO, bordeTotal, 10.5));
   filaTotales.push(celdaTexto('-', 'center', true, COLOR_GRIS_TOTAL_BG, COLOR_NEGRO_SOLIDO, bordeTotal));
@@ -1032,7 +1044,7 @@ function generarHojaCabanas(ventasCabanas, claveSemana) {
   filaTotales.push(celdaMoneda(totalLiquidadoSum, true, COLOR_GRIS_TOTAL_BG, COLOR_NEGRO_SOLIDO, bordeTotal, 10.5));
   filaTotales.push(celdaTexto('-', 'center', true, COLOR_GRIS_TOTAL_BG, COLOR_NEGRO_SOLIDO, bordeTotal));
   filaTotales.push(celdaTexto('-', 'center', true, COLOR_GRIS_TOTAL_BG, COLOR_NEGRO_SOLIDO, bordeTotal));
-  filaTotales.push(celdaTexto('', 'left', false, COLOR_GRIS_TOTAL_BG, COLOR_NEGRO_SOLIDO, bordeTotal)); // Observaciones vacía
+  filaTotales.push(celdaTexto('', 'left', false, COLOR_GRIS_TOTAL_BG, COLOR_NEGRO_SOLIDO, bordeTotal));
 
   rows.push(filaTotales);
 
@@ -1075,21 +1087,24 @@ function generarHojaCabanas(ventasCabanas, claveSemana) {
 }
 
 // ============================================================================
-// HOJA 3: VENTAS DE ACTIVIDADES RECREATIVAS (ENFOCADA Y LIMPIA)
+// HOJA INDIVIDUAL: VENTAS DE ACTIVIDADES RECREATIVAS (POR SEMANA O GENERAL)
 // ============================================================================
-function generarHojaActividades(ventasActividades, claveSemana) {
+function generarHojaActividades(ventasActividades, infoSemana) {
   const TOTAL_COLS = 20;
   const hoyStr = new Date().toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' });
-  const periodoEtiqueta = claveSemana && claveSemana !== 'todas' ? `Período: ${claveSemana}` : 'Semanas Concluidas y Semana Actual';
+  const etiquetaSemana = infoSemana
+    ? `Semana ${infoSemana.numeroSemana} (${infoSemana.inicioMX} al ${infoSemana.finMX})`
+    : 'Semanas Concluidas y Semana Actual';
+
   const rows = [];
   const merges = [];
 
   // Fila 0: Banner
-  rows.push(crearFilaBanner('RANCHO KARINGA • REPORTE OPERATIVO DE ACTIVIDADES RECREATIVAS', TOTAL_COLS));
+  rows.push(crearFilaBanner(`RANCHO KARINGA • ACTIVIDADES RECREATIVAS - ${infoSemana ? `SEMANA ${infoSemana.numeroSemana}` : 'CONSOLIDADO'}`, TOTAL_COLS));
   merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: TOTAL_COLS - 1 } });
 
   // Fila 1: Subtítulo
-  rows.push(crearFilaSubtitulo(`${periodoEtiqueta}  |  Generado: ${hoyStr}  |  Moneda: MXN ($)  |  Sistema de Gestión Rancho Karinga`, TOTAL_COLS));
+  rows.push(crearFilaSubtitulo(`${etiquetaSemana}  |  Generado: ${hoyStr}  |  Moneda: MXN ($)  |  Sistema de Gestión Rancho Karinga`, TOTAL_COLS));
   merges.push({ s: { r: 1, c: 0 }, e: { r: 1, c: TOTAL_COLS - 1 } });
 
   // Fila 2: Separador
@@ -1190,7 +1205,7 @@ function generarHojaActividades(ventasActividades, claveSemana) {
     celdaHeader('Temporada', COLOR_GRIS_ENCABEZADO),
     celdaHeader('Costo Actividad ($)', COLOR_GRIS_SECUNDARIO, 'right'),
     celdaHeader('Descuento (%)', COLOR_GRIS_SECUNDARIO, 'right'),
-    celdaHeader('TOTAL GENERAL', COLOR_NEGRO_SOLIDO, 'right'), // Destacado negro sólido
+    celdaHeader('TOTAL GENERAL', COLOR_NEGRO_SOLIDO, 'right'),
     celdaHeader('Estado de Pago', COLOR_GRIS_ENCABEZADO),
     celdaHeader('Anticipo (P1)', COLOR_GRIS_SECUNDARIO, 'right'),
     celdaHeader('Método Anticipo', COLOR_GRIS_SECUNDARIO),
@@ -1204,55 +1219,65 @@ function generarHojaActividades(ventasActividades, claveSemana) {
   rows.push(filaEncabezados);
 
   // Filas de Registros de Actividades
-  ventasActividades.forEach((v, idx) => {
-    const anticipo = Number(v.anticipo) || 0;
-    const saldoPendiente = Number(v.saldo_pendiente) || 0;
-    const descuento = Number(v.descuento_especial) || 0;
-    const montoLiquidado = Number(v.monto_liquidado) || 0;
-    const infoSem = obtenerInfoSemana(v.fecha);
-    const fondoZebra = idx % 2 === 1 ? COLOR_ZEBRA_BG : null;
-
-    const costoBase = Number(v.costo_actividades) || Number(v.subtotal) || Number(v.total) || 0;
-    const granTotal = Math.max(costoBase, anticipo + montoLiquidado + saldoPendiente);
-
-    const saldoEfectivo = v.estado_pago === 'liquidado' ? 0 : (saldoPendiente > 0 ? saldoPendiente : Math.max(0, granTotal - anticipo));
-    const liqEfectiva = v.estado_pago === 'liquidado'
-      ? (montoLiquidado > 0 ? montoLiquidado : (anticipo > 0 ? Math.max(0, granTotal - anticipo) : granTotal))
-      : montoLiquidado;
-
-    let porcentajeDescuento = 0;
-    if (v.tipo_descuento === 'porcentaje' && Number(v.valor_descuento) > 0) {
-      porcentajeDescuento = Number(v.valor_descuento) / 100;
-    } else if (descuento > 0) {
-      const subtotalBase = granTotal + descuento;
-      porcentajeDescuento = subtotalBase > 0 ? (descuento / subtotalBase) : 0;
+  if (ventasActividades.length === 0) {
+    const rVacio = rows.length;
+    const filaVaciaTexto = [celdaTexto('No se registraron ventas de actividades en este período.', 'center', true)];
+    for (let c = 1; c < TOTAL_COLS; c++) {
+      filaVaciaTexto.push(celdaTexto('', 'center'));
     }
+    rows.push(filaVaciaTexto);
+    merges.push({ s: { r: rVacio, c: 0 }, e: { r: rVacio, c: TOTAL_COLS - 1 } });
+  } else {
+    ventasActividades.forEach((v, idx) => {
+      const anticipo = Number(v.anticipo) || 0;
+      const saldoPendiente = Number(v.saldo_pendiente) || 0;
+      const descuento = Number(v.descuento_especial) || 0;
+      const montoLiquidado = Number(v.monto_liquidado) || 0;
+      const infoSem = obtenerInfoSemana(v.fecha);
+      const fondoZebra = idx % 2 === 1 ? COLOR_ZEBRA_BG : null;
 
-    rows.push([
-      celdaNumero(idx + 1, false, fondoZebra),
-      celdaTexto(formatearFecha(v.fecha), 'center', false, fondoZebra),
-      celdaTexto(v.hora || '', 'center', false, fondoZebra),
-      celdaTexto(infoSem ? infoSem.etiquetaSemana : '-', 'center', false, fondoZebra),
-      celdaTexto(v.nombre_reservacion || 'Público General', 'left', true, fondoZebra),
-      celdaTexto(obtenerNombreConcepto(v), 'left', false, fondoZebra),
-      celdaTexto(v.detalles_actividades && v.detalles_actividades !== 'Ninguna' ? v.detalles_actividades : '-', 'left', false, fondoZebra),
-      celdaTexto(formatearTemporada(v.temporada), 'center', false, fondoZebra),
-      celdaMoneda(costoBase, false, fondoZebra),
-      porcentajeDescuento > 0
-        ? celdaPorcentaje(porcentajeDescuento, true, fondoZebra, bordeFino, COLOR_NEGRO_SOLIDO)
-        : celdaTexto('-', 'center', false, fondoZebra),
-      celdaMoneda(granTotal, true, COLOR_GRIS_CLARO_BG, COLOR_NEGRO_SOLIDO),
-      celdaEstado(v.estado_pago),
-      celdaMoneda(anticipo, anticipo > 0, fondoZebra),
-      celdaTexto(v.metodo_pago_anticipo || (anticipo > 0 ? v.metodo_pago : '-'), 'center', false, fondoZebra),
-      celdaTexto(v.comprobante_anticipo || '-', 'left', false, fondoZebra),
-      celdaMoneda(saldoEfectivo, saldoEfectivo > 0, fondoZebra),
-      celdaMoneda(liqEfectiva, liqEfectiva > 0, fondoZebra),
-      celdaTexto(v.metodo_pago_liquidacion || (v.estado_pago === 'liquidado' ? v.metodo_pago : '-'), 'center', false, fondoZebra),
-      celdaTexto(v.comprobante_pago || '-', 'left', false, fondoZebra),
-      celdaTexto('', 'left', false, fondoZebra) // Observaciones vacía
-    ]);
-  });
+      const costoBase = Number(v.costo_actividades) || Number(v.subtotal) || Number(v.total) || 0;
+      const granTotal = Math.max(costoBase, anticipo + montoLiquidado + saldoPendiente);
+
+      const saldoEfectivo = v.estado_pago === 'liquidado' ? 0 : (saldoPendiente > 0 ? saldoPendiente : Math.max(0, granTotal - anticipo));
+      const liqEfectiva = v.estado_pago === 'liquidado'
+        ? (montoLiquidado > 0 ? montoLiquidado : (anticipo > 0 ? Math.max(0, granTotal - anticipo) : granTotal))
+        : montoLiquidado;
+
+      let porcentajeDescuento = 0;
+      if (v.tipo_descuento === 'porcentaje' && Number(v.valor_descuento) > 0) {
+        porcentajeDescuento = Number(v.valor_descuento) / 100;
+      } else if (descuento > 0) {
+        const subtotalBase = granTotal + descuento;
+        porcentajeDescuento = subtotalBase > 0 ? (descuento / subtotalBase) : 0;
+      }
+
+      rows.push([
+        celdaNumero(idx + 1, false, fondoZebra),
+        celdaTexto(formatearFecha(v.fecha), 'center', false, fondoZebra),
+        celdaTexto(v.hora || '', 'center', false, fondoZebra),
+        celdaTexto(infoSem ? infoSem.etiquetaSemana : '-', 'center', false, fondoZebra),
+        celdaTexto(v.nombre_reservacion || 'Público General', 'left', true, fondoZebra),
+        celdaTexto(obtenerNombreConcepto(v), 'left', false, fondoZebra),
+        celdaTexto(v.detalles_actividades && v.detalles_actividades !== 'Ninguna' ? v.detalles_actividades : '-', 'left', false, fondoZebra),
+        celdaTexto(formatearTemporada(v.temporada), 'center', false, fondoZebra),
+        celdaMoneda(costoBase, false, fondoZebra),
+        porcentajeDescuento > 0
+          ? celdaPorcentaje(porcentajeDescuento, true, fondoZebra, bordeFino, COLOR_NEGRO_SOLIDO)
+          : celdaTexto('-', 'center', false, fondoZebra),
+        celdaMoneda(granTotal, true, COLOR_GRIS_CLARO_BG, COLOR_NEGRO_SOLIDO),
+        celdaEstado(v.estado_pago),
+        celdaMoneda(anticipo, anticipo > 0, fondoZebra),
+        celdaTexto(v.metodo_pago_anticipo || (anticipo > 0 ? v.metodo_pago : '-'), 'center', false, fondoZebra),
+        celdaTexto(v.comprobante_anticipo || '-', 'left', false, fondoZebra),
+        celdaMoneda(saldoEfectivo, saldoEfectivo > 0, fondoZebra),
+        celdaMoneda(liqEfectiva, liqEfectiva > 0, fondoZebra),
+        celdaTexto(v.metodo_pago_liquidacion || (v.estado_pago === 'liquidado' ? v.metodo_pago : '-'), 'center', false, fondoZebra),
+        celdaTexto(v.comprobante_pago || '-', 'left', false, fondoZebra),
+        celdaTexto('', 'left', false, fondoZebra)
+      ]);
+    });
+  }
 
   // Fila Totales Actividades
   const filaTotalIdx = rows.length;
@@ -1277,7 +1302,7 @@ function generarHojaActividades(ventasActividades, claveSemana) {
 
   filaTotales.push(celdaMoneda(totalGeneralSum + totalDescuentosSum, true, COLOR_GRIS_TOTAL_BG, COLOR_NEGRO_SOLIDO, bordeTotal));
   filaTotales.push(porcentajeDescuentoGlobal > 0 ? celdaPorcentaje(porcentajeDescuentoGlobal, true, COLOR_GRIS_TOTAL_BG, bordeTotal, COLOR_NEGRO_SOLIDO) : celdaTexto('-', 'center', true, COLOR_GRIS_TOTAL_BG, COLOR_NEGRO_SOLIDO, bordeTotal));
-  filaTotales.push(celdaMoneda(totalGeneralSum, true, COLOR_NEGRO_SOLIDO, COLOR_BLANCO, bordeTotal, 11)); // Destacado negro sólido
+  filaTotales.push(celdaMoneda(totalGeneralSum, true, COLOR_NEGRO_SOLIDO, COLOR_BLANCO, bordeTotal, 11));
   filaTotales.push(celdaTexto('-', 'center', true, COLOR_GRIS_TOTAL_BG, COLOR_NEGRO_SOLIDO, bordeTotal));
   filaTotales.push(celdaMoneda(totalAnticiposSum, true, COLOR_GRIS_TOTAL_BG, COLOR_NEGRO_SOLIDO, bordeTotal, 10.5));
   filaTotales.push(celdaTexto('-', 'center', true, COLOR_GRIS_TOTAL_BG, COLOR_NEGRO_SOLIDO, bordeTotal));
@@ -1286,7 +1311,7 @@ function generarHojaActividades(ventasActividades, claveSemana) {
   filaTotales.push(celdaMoneda(totalLiquidadoSum, true, COLOR_GRIS_TOTAL_BG, COLOR_NEGRO_SOLIDO, bordeTotal, 10.5));
   filaTotales.push(celdaTexto('-', 'center', true, COLOR_GRIS_TOTAL_BG, COLOR_NEGRO_SOLIDO, bordeTotal));
   filaTotales.push(celdaTexto('-', 'center', true, COLOR_GRIS_TOTAL_BG, COLOR_NEGRO_SOLIDO, bordeTotal));
-  filaTotales.push(celdaTexto('', 'left', false, COLOR_GRIS_TOTAL_BG, COLOR_NEGRO_SOLIDO, bordeTotal)); // Observaciones vacía
+  filaTotales.push(celdaTexto('', 'left', false, COLOR_GRIS_TOTAL_BG, COLOR_NEGRO_SOLIDO, bordeTotal));
 
   rows.push(filaTotales);
 
@@ -1323,12 +1348,19 @@ function generarHojaActividades(ventasActividades, claveSemana) {
 
 // ============================================================================
 // FUNCIÓN PRINCIPAL DE EXPORTACIÓN (CLIENTE)
+// Estructura solicitada:
+// Hoja 1: Métricas
+// Hoja 2: Cabañas Semana 39
+// Hoja 3: Actividades Semana 39
+// Hoja 4: Cabañas Semana 40
+// Hoja 5: Actividades Semana 40
+// ... y así sucesivamente
 // ============================================================================
 export function exportarExcelCliente(ventas, tipo = 'todos', claveSemana = 'todas') {
   const semanaActual = obtenerInfoSemana(new Date());
   let filtradas = ventas;
 
-  // 1. Solo exportar semanas ya concluidas o la semana actual (excluir semanas futuras)
+  // 1. Excluir semanas futuras (solo semanas ya concluidas o semana actual)
   if (semanaActual) {
     filtradas = filtradas.filter((v) => {
       const info = obtenerInfoSemana(v.fecha);
@@ -1345,40 +1377,57 @@ export function exportarExcelCliente(ventas, tipo = 'todos', claveSemana = 'toda
   }
 
   const libro = XLSX.utils.book_new();
-  const sufijoSemana = claveSemana && claveSemana !== 'todas' ? ` ${claveSemana}` : '';
-  const nombreHojaStats = `Estadísticas${sufijoSemana}`;
 
-  if (tipo === 'cabanas') {
-    const cabanas = filtradas.filter((v) => Boolean(v.cabana_id));
-    const hojaStats = generarHojaEstadisticas(cabanas, claveSemana, semanaActual, 'cabanas');
-    XLSX.utils.book_append_sheet(libro, hojaStats, nombreHojaStats);
+  // 1. HOJA 1: MÉTRICAS (Estadísticas operativas)
+  const hojaMetricas = generarHojaEstadisticas(filtradas, claveSemana, semanaActual, tipo);
+  XLSX.utils.book_append_sheet(libro, hojaMetricas, 'Métricas');
 
-    const hojaCab = generarHojaCabanas(cabanas, claveSemana);
-    XLSX.utils.book_append_sheet(libro, hojaCab, 'Ventas Cabañas');
-  } else if (tipo === 'interacciones' || tipo === 'actividades') {
-    const actividades = filtradas.filter((v) => !v.cabana_id);
-    const hojaStats = generarHojaEstadisticas(actividades, claveSemana, semanaActual, 'actividades');
-    XLSX.utils.book_append_sheet(libro, hojaStats, nombreHojaStats);
+  // 2. Extraer semanas únicas presentes en los datos
+  const mapaSemanasUnicas = {};
+  filtradas.forEach((v) => {
+    const info = obtenerInfoSemana(v.fecha);
+    if (info) {
+      mapaSemanasUnicas[info.claveSemana] = info;
+    }
+  });
 
-    const hojaAct = generarHojaActividades(actividades, claveSemana);
-    XLSX.utils.book_append_sheet(libro, hojaAct, 'Ventas Actividades');
-  } else {
-    // Estructura oficial solicitada:
-    // Hoja 1: Estadísticas de la semana (o del período)
-    // Hoja 2: Todas las ventas de cabañas
-    // Hoja 3: Todas las ventas de actividades
-    const cabanas = filtradas.filter((v) => Boolean(v.cabana_id));
-    const actividades = filtradas.filter((v) => !v.cabana_id);
+  // Orden ascendente cronológico (Semana 39, Semana 40...)
+  const semanasOrdenadas = Object.values(mapaSemanasUnicas).sort((a, b) =>
+    a.claveSemana.localeCompare(b.claveSemana)
+  );
 
-    const hojaStats = generarHojaEstadisticas(filtradas, claveSemana, semanaActual, 'todos');
-    XLSX.utils.book_append_sheet(libro, hojaStats, nombreHojaStats);
-
-    const hojaCab = generarHojaCabanas(cabanas, claveSemana);
-    XLSX.utils.book_append_sheet(libro, hojaCab, 'Ventas Cabañas');
-
-    const hojaAct = generarHojaActividades(actividades, claveSemana);
-    XLSX.utils.book_append_sheet(libro, hojaAct, 'Ventas Actividades');
+  // Si no hay semanas registradas pero hay semana actual
+  if (semanasOrdenadas.length === 0 && semanaActual) {
+    semanasOrdenadas.push(semanaActual);
   }
+
+  const hayMultiplesAnos = new Set(semanasOrdenadas.map(s => s.anoSemana)).size > 1;
+
+  // 3. Generar hojas semanales en pares alternados:
+  // Cabañas Semana N, Actividades Semana N...
+  semanasOrdenadas.forEach((sem) => {
+    const ventasSemana = filtradas.filter((v) => {
+      const info = obtenerInfoSemana(v.fecha);
+      return info && info.claveSemana === sem.claveSemana;
+    });
+
+    const cabanasSemana = ventasSemana.filter((v) => Boolean(v.cabana_id));
+    const actividadesSemana = ventasSemana.filter((v) => !v.cabana_id);
+
+    const sufijoSemana = hayMultiplesAnos
+      ? `Sem ${sem.numeroSemana} (${sem.anoSemana})`
+      : `Semana ${sem.numeroSemana}`;
+
+    if (tipo !== 'interacciones' && tipo !== 'actividades') {
+      const hojaCab = generarHojaCabanas(cabanasSemana, sem);
+      XLSX.utils.book_append_sheet(libro, hojaCab, `Cabañas ${sufijoSemana}`);
+    }
+
+    if (tipo !== 'cabanas') {
+      const hojaAct = generarHojaActividades(actividadesSemana, sem);
+      XLSX.utils.book_append_sheet(libro, hojaAct, `Actividades ${sufijoSemana}`);
+    }
+  });
 
   const fechaHoy = new Date().toISOString().split('T')[0];
   const archivoNombre = claveSemana && claveSemana !== 'todas'

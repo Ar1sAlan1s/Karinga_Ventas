@@ -138,11 +138,11 @@ export default function PaginaExportacion({
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-              <span style={{ fontWeight: 800, color: '#0F172A', fontSize: '1.05rem' }}>Reporte Completo (3 Hojas)</span>
+              <span style={{ fontWeight: 800, color: '#0F172A', fontSize: '1.05rem' }}>Reporte Completo Semanal</span>
               <Icono nombre="folder" tamano={22} color={tipoReporte === 'todos' ? '#15803D' : '#94A3B8'} />
             </div>
             <p style={{ margin: 0, fontSize: '0.82rem', color: '#64748B' }}>
-              Incluye Hoja 1: Estadísticas, Hoja 2: Ventas Cabañas y Hoja 3: Ventas Actividades.
+              Hoja 1: Métricas. Hojas siguientes ordenadas por semana: Cabañas Semana N, Actividades Semana N.
             </p>
           </div>
 
