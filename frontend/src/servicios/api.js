@@ -1,6 +1,13 @@
 import { CABANAS_INICIALES } from '../constantes/datosIniciales';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+// Normaliza la URL base de la API para garantizar el sufijo /api
+const normalizarApiUrl = () => {
+  let url = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+  url = url.trim().replace(/\/+$/, '');
+  return url.endsWith('/api') ? url : `${url}/api`;
+};
+
+const API_BASE = normalizarApiUrl();
 
 export async function obtenerCabanasApi() {
   try {
