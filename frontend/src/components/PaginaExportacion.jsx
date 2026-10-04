@@ -61,7 +61,7 @@ export default function PaginaExportacion({
                 Centro de Exportación de Reportes Excel
               </h2>
               <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748B' }}>
-                Genera hojas de cálculo oficiales con desglose de semanas, fechas de inicio/fin y canales de pago.
+                Genera el libro oficial con 3 hojas: Estadísticas de la semana, Ventas de Cabañas y Ventas de Actividades, optimizado para impresión en blanco y negro.
               </p>
             </div>
           </div>
@@ -138,11 +138,11 @@ export default function PaginaExportacion({
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-              <span style={{ fontWeight: 800, color: '#0F172A', fontSize: '1.05rem' }}>Todo el Historial</span>
+              <span style={{ fontWeight: 800, color: '#0F172A', fontSize: '1.05rem' }}>Reporte Completo (3 Hojas)</span>
               <Icono nombre="folder" tamano={22} color={tipoReporte === 'todos' ? '#15803D' : '#94A3B8'} />
             </div>
             <p style={{ margin: 0, fontSize: '0.82rem', color: '#64748B' }}>
-              Consolidado completo de Hospedaje en Cabañas y Actividades ecoturísticas.
+              Incluye Hoja 1: Estadísticas, Hoja 2: Ventas Cabañas y Hoja 3: Ventas Actividades.
             </p>
           </div>
 
@@ -202,7 +202,7 @@ export default function PaginaExportacion({
               <span>Anticipos: <strong style={{ color: '#1D4ED8' }}>$${totalAnticipos.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</strong></span>
             </div>
             <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.78rem', color: '#64748B' }}>
-              El archivo incluirá pestañas para: Ventas detalladas con semanas, Hoja resumen por semanas y Hoja de canales de pago.
+              El archivo descargará 3 hojas ejecutivas: Estadísticas, Cabañas y Actividades, preparadas con alto contraste para impresión física en blanco y negro.
             </p>
           </div>
 
