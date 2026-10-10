@@ -640,6 +640,45 @@ export async function sincronizarYCrearReservacionesEnDb({ cabanaId = null } = {
     }
   }
 
+  const erroresAuth = detalleCalendarios.filter((c) =>
+    c.error && (
+      c.error.toLowerCase().includes('invalid_grant') ||
+      c.error.toLowerCase().includes('token has been expired') ||
+      c.error.toLowerCase().includes('revoked') ||
+      c.error.toLowerCase().includes('unauthorized')
+    )
+  );
+
+  if (erroresAuth.length > 0) {
+    return {
+      exito: false,
+      mensaje: 'Error de autenticación con Google Calendar: El token OAuth 2.0 (GOOGLE_REFRESH_TOKEN) ha expirado o fue revocado. Se requiere renovar el token en .env y Render.',
+      creadas: 0,
+      actualizadas: 0,
+      omitidas: 0,
+      totalEventos: 0,
+      reservacionesCreadas: [],
+      reservacionesActualizadas: [],
+      calendarios: detalleCalendarios
+    };
+  }
+
+  const todosFallaron = detalleCalendarios.length > 0 && detalleCalendarios.every((c) => !c.exito);
+  if (todosFallaron) {
+    const primerError = detalleCalendarios.find((c) => c.error)?.error || 'Error de conexión con Google Calendar';
+    return {
+      exito: false,
+      mensaje: `No se pudo sincronizar ningún calendario: ${primerError}`,
+      creadas: 0,
+      actualizadas: 0,
+      omitidas: 0,
+      totalEventos: 0,
+      reservacionesCreadas: [],
+      reservacionesActualizadas: [],
+      calendarios: detalleCalendarios
+    };
+  }
+
   const cabanaTexto =
     calendarios.length === 1 ? `de ${calendarios[0].cabanaNombre}` : 'de todas las cabañas';
 
@@ -688,6 +727,8 @@ export async function consultarEventosGoogleCalendar(filtroCabanaId = null) {
 
   const { cliente: calendarClient, tipo } = await obtenerClienteGoogleApi();
 
+  let errorGeneral = null;
+
   const promesas = calendarios.map(async (cal) => {
     try {
       let items = [];
@@ -721,6 +762,9 @@ export async function consultarEventosGoogleCalendar(filtroCabanaId = null) {
         });
     } catch (err) {
       console.warn(`[Google Calendar] Error en ${cal.cabanaNombre}:`, err.message);
+      if (err.message && (err.message.toLowerCase().includes('invalid_grant') || err.message.toLowerCase().includes('expired') || err.message.toLowerCase().includes('revoked'))) {
+        errorGeneral = 'El token OAuth 2.0 de Google (GOOGLE_REFRESH_TOKEN) ha expirado o fue revocado. Se requiere renovar el token.';
+      }
       return [];
     }
   });
@@ -730,9 +774,10 @@ export async function consultarEventosGoogleCalendar(filtroCabanaId = null) {
   todos.sort((a, b) => (a.fecha_inicio || '').localeCompare(b.fecha_inicio || ''));
 
   return {
-    exito: true,
+    exito: !errorGeneral,
     timeMin,
     total: todos.length,
-    datos: todos
+    datos: todos,
+    aviso: errorGeneral || null
   };
 }
