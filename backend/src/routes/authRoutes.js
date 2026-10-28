@@ -11,3 +11,4 @@ router.post('/logout', logout);
 router.get('/perfil', verificarAutenticacion, perfil);
 
 export default router;
+

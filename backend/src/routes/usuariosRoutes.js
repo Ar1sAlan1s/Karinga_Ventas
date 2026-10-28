@@ -12,3 +12,4 @@ router.get('/', listarUsuarios);
 router.patch('/:id/estado', cambiarEstadoUsuario);
 
 export default router;
+

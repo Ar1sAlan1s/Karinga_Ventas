@@ -160,3 +160,4 @@ export async function fetchAutenticado(url, opciones = {}) {
 
   return respuesta;
 }
+

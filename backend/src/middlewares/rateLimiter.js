@@ -45,3 +45,4 @@ export const apiRateLimiter = rateLimit({
     mensaje: 'Límite de peticiones excedido. Por favor, disminuya la frecuencia de consultas.'
   }
 });
+

@@ -1,7 +1,11 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'karinga_jwt_super_secret_development_key_change_in_production_2026';
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  throw new Error('[SEGURIDAD FATAL] Debe definir la variable JWT_SECRET en el entorno de producción.');
+}
+
+const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_only_for_local_development_must_set_in_env_file';
 const ACCESS_TOKEN_EXPIRATION = '15m'; // Token de corta duración
 export const REFRESH_TOKEN_DAYS = 30; // 30 días de persistencia
 

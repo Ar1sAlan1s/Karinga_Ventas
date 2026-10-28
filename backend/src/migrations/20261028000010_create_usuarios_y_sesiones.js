@@ -46,3 +46,4 @@ export async function down(knex) {
   await knex.schema.dropTableIfExists('sesiones_tokens');
   await knex.schema.dropTableIfExists('usuarios');
 }
+
