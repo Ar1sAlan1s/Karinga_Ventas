@@ -1,4 +1,5 @@
 import Icono from '../Icono';
+import { useAuth } from '../../context/AuthContext';
 
 export default function MobileTopBar({
   fecha,
@@ -6,6 +7,8 @@ export default function MobileTopBar({
   modoEscritorioForzado,
   setModoEscritorioForzado
 }) {
+  const { cerrarSesion } = useAuth();
+
   const formatearFechaCorta = (fechaStr) => {
     if (!fechaStr) return '';
     try {
@@ -36,10 +39,8 @@ export default function MobileTopBar({
             className="karinga-mobile-action-btn"
             onClick={onAbrirSincronizacion}
             title="Sincronizar Google Calendar"
-            title="Ver Google Calendar"
           >
             <Icono nombre="calendar" tamano={16} color="var(--verde-oscuro)" />
-            <span>Sincronizar</span>
             <span>Google Cal</span>
           </button>
         )}
@@ -53,8 +54,17 @@ export default function MobileTopBar({
           <Icono nombre={modoEscritorioForzado ? 'bed' : 'settings'} tamano={15} color="#475569" />
           <span>{modoEscritorioForzado ? 'Móvil' : 'PC'}</span>
         </button>
+
+        <button
+          type="button"
+          className="karinga-mobile-mode-btn"
+          onClick={cerrarSesion}
+          title="Cerrar sesión"
+          style={{ borderColor: '#FCA5A5', color: '#DC2626' }}
+        >
+          <Icono nombre="lock" tamano={14} color="#DC2626" />
+        </button>
       </div>
     </header>
   );
 }
-

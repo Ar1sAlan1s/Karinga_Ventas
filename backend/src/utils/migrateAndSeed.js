@@ -1,5 +1,6 @@
 import db from '../config/db.js';
 import { seed } from '../seeds/01_cabanas.js';
+import { seed as seedUsuarios } from '../seeds/02_usuarios.js';
 
 export async function autoMigrateAndSeed() {
   if (process.env.AUTO_MIGRATE === 'false') {
@@ -13,6 +14,9 @@ export async function autoMigrateAndSeed() {
     } else {
       console.log('[DB] Base de datos al día con las migraciones.');
     }
+
+    // Asegurar usuario inicial Administrador
+    await seedUsuarios(db);
 
     // Verificar si los IDs canónicos están correctamente asignados
     const buenaVista = await db('cabanas').where({ id: 4 }).first();

@@ -1,12 +1,29 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+
+import authRoutes from './routes/authRoutes.js';
+import usuariosRoutes from './routes/usuariosRoutes.js';
 import cabanasRoutes from './routes/cabanasRoutes.js';
 import ventasRoutes from './routes/ventasRoutes.js';
 import reservacionesRoutes from './routes/reservacionesRoutes.js';
 
+import { verificarAutenticacion } from './middlewares/authMiddleware.js';
+import { apiRateLimiter } from './middlewares/rateLimiter.js';
+
 const app = express();
 
-// Configuración de CORS dinámico para desarrollo local y producción en Vercel
+// 1. Cabeceras HTTP de seguridad avanzada con Helmet
+app.use(helmet({
+  crossOriginResourcePolicy: false,
+  crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' }
+}));
+
+// 2. Parser de Cookies para lectura segura de Refresh Tokens httpOnly
+app.use(cookieParser());
+
+// 3. Configuración de CORS dinámico para desarrollo y producción
 const origenesPermitidos = [
   'http://localhost:5173',
   'http://localhost:3000',
@@ -22,10 +39,8 @@ if (process.env.FRONTEND_URL) {
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Permitir peticiones sin origen (como Postman, apps móviles o llamadas internas)
     if (!origin) return callback(null, true);
 
-    // Si coincide con los orígenes permitidos o con dominios de Vercel
     if (
       origenesPermitidos.includes(origin) ||
       origin.endsWith('.vercel.app') ||
@@ -34,7 +49,6 @@ app.use(cors({
       return callback(null, true);
     }
 
-    // Permisivo por defecto para evitar bloqueos imprevistos en despliegue
     return callback(null, true);
   },
   credentials: true,
@@ -42,9 +56,14 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// 4. Límite estricto de tamaño de payload contra ataques de saturación
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
+// 5. Limitador general de peticiones (Protección contra DDoS / Flooding)
+app.use(apiRateLimiter);
+
+// 6. Endpoints de Salud (Públicos)
 const healthHandler = (req, res) => {
   res.json({
     estado: 'ok',
@@ -56,14 +75,25 @@ const healthHandler = (req, res) => {
 app.get('/api/health', healthHandler);
 app.get('/health', healthHandler);
 
-// Rutas montadas con y sin prefijo /api para garantizar compatibilidad total
-app.use('/api/cabanas', cabanasRoutes);
-app.use('/cabanas', cabanasRoutes);
-app.use('/api/ventas', ventasRoutes);
-app.use('/ventas', ventasRoutes);
-app.use('/api/reservaciones', reservacionesRoutes);
-app.use('/reservaciones', reservacionesRoutes);
+// 7. Rutas de Autenticación (Login, Refresh, Logout, Perfil)
+app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
 
+// 8. Rutas de Gestión de Usuarios (Exclusivo Administradores)
+app.use('/api/usuarios', usuariosRoutes);
+app.use('/usuarios', usuariosRoutes);
+
+// 9. Rutas de Negocio Protegidas con JWT (Ventas, Cabañas, Reservaciones)
+app.use('/api/cabanas', verificarAutenticacion, cabanasRoutes);
+app.use('/cabanas', verificarAutenticacion, cabanasRoutes);
+
+app.use('/api/ventas', verificarAutenticacion, ventasRoutes);
+app.use('/ventas', verificarAutenticacion, ventasRoutes);
+
+app.use('/api/reservaciones', verificarAutenticacion, reservacionesRoutes);
+app.use('/reservaciones', verificarAutenticacion, reservacionesRoutes);
+
+// Manejador 404
 app.use((req, res) => {
   res.status(404).json({
     exito: false,
@@ -71,6 +101,7 @@ app.use((req, res) => {
   });
 });
 
+// Manejador Global de Errores
 app.use((err, req, res, _next) => {
   console.error('Error no controlado:', err);
   res.status(500).json({
