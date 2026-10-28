@@ -9,6 +9,9 @@ import PaginaCalendario from './components/PaginaCalendario';
 import PaginaReportes from './components/PaginaReportes';
 import ModalSincronizarCalendario from './components/ModalSincronizarCalendario';
 
+import Login from './components/Login';
+import { useAuth } from './context/AuthContext';
+
 // Componentes y Navegación Exclusivos para Celulares
 import MobileTopBar from './components/mobile/MobileTopBar';
 import MobileBottomNav from './components/mobile/MobileBottomNav';
@@ -51,6 +54,7 @@ function obtenerFechaYHoraActual() {
 }
 
 export default function App() {
+  const { estaAutenticado, cargando } = useAuth();
   const actual = obtenerFechaYHoraActual();
 
   const esMovil = useIsMobile(768);
@@ -77,6 +81,7 @@ export default function App() {
   const [registrando, setRegistrando] = useState(false);
   const [cargandoExcel, setCargandoExcel] = useState(false);
   const [mensajeToast, setMensajeToast] = useState(null);
+
   // Temporizador automático de 4.5 segundos para cerrar notificaciones
   useEffect(() => {
     if (!mensajeToast) return;
@@ -86,8 +91,9 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [mensajeToast]);
 
-
+  // Carga de catálogo y ventas al autenticarse
   useEffect(() => {
+    if (!estaAutenticado) return;
     async function cargarDatos() {
       try {
         const [cabanasData, ventasData] = await Promise.all([
@@ -101,7 +107,7 @@ export default function App() {
       }
     }
     cargarDatos();
-  }, []);
+  }, [estaAutenticado]);
 
   const recargarVentas = async () => {
     try {
@@ -245,6 +251,40 @@ export default function App() {
     }).length;
   }, [ventas]);
 
+  // Pantalla de carga mientras se valida la persistencia de sesión
+  if (cargando) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #143D2B 0%, #1F5F3E 100%)',
+        color: '#FFFFFF'
+      }}>
+        <div style={{
+          width: '46px',
+          height: '46px',
+          border: '4px solid rgba(255, 255, 255, 0.2)',
+          borderTopColor: '#86EFAC',
+          borderRadius: '50%',
+          animation: 'karingaSpin 0.8s linear infinite',
+          marginBottom: '1.25rem'
+        }} />
+        <p style={{ fontSize: '1.05rem', fontWeight: 500, letterSpacing: '0.3px' }}>
+          Verificando sesión segura...
+        </p>
+        <style>{`@keyframes karingaSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  // Si no está autenticado, renderizar la pantalla de Login
+  if (!estaAutenticado) {
+    return <Login />;
+  }
+
   const esVistaMovilActiva = esMovil && !modoEscritorioForzado;
 
   return (
@@ -253,7 +293,6 @@ export default function App() {
       {esVistaMovilActiva ? (
         <MobileTopBar
           fecha={fecha}
-          onAbrirSincronizacion={() => setModalSincronizarGlobal(true)}
           paginaActiva={paginaActiva}
           onAbrirSincronizacion={
             (paginaActiva === 'cabanas' || paginaActiva === 'calendario')
@@ -426,7 +465,6 @@ export default function App() {
           conteoPendientes={conteoPendientes}
         />
       )}
-
 
       {/* MODAL GLOBAL DE GOOGLE CALENDAR */}
       {modalSincronizarGlobal && (

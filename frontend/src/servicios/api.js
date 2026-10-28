@@ -1,17 +1,9 @@
 import { CABANAS_INICIALES } from '../constantes/datosIniciales';
-
-// Normaliza la URL base de la API para garantizar el sufijo /api
-const normalizarApiUrl = () => {
-  let url = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-  url = url.trim().replace(/\/+$/, '');
-  return url.endsWith('/api') ? url : `${url}/api`;
-};
-
-const API_BASE = normalizarApiUrl();
+import { fetchAutenticado, API_BASE } from './authApi';
 
 export async function obtenerCabanasApi() {
   try {
-    const respuesta = await fetch(`${API_BASE}/cabanas`);
+    const respuesta = await fetchAutenticado(`${API_BASE}/cabanas`);
     if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
     const json = await respuesta.json();
     if (json.exito && Array.isArray(json.datos) && json.datos.length > 0) {
@@ -26,7 +18,7 @@ export async function obtenerCabanasApi() {
 
 export async function registrarVentaApi(datosVenta) {
   try {
-    const respuesta = await fetch(`${API_BASE}/ventas`, {
+    const respuesta = await fetchAutenticado(`${API_BASE}/ventas`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(datosVenta)
@@ -46,7 +38,7 @@ export async function registrarVentaApi(datosVenta) {
 }
 
 export async function asignarHorasExtraApi(id, payload) {
-  const respuesta = await fetch(`${API_BASE}/ventas/${id}/horas-extra`, {
+  const respuesta = await fetchAutenticado(`${API_BASE}/ventas/${id}/horas-extra`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
@@ -60,7 +52,7 @@ export async function asignarHorasExtraApi(id, payload) {
 }
 
 export async function liquidarSaldoApi(id, payload) {
-  const respuesta = await fetch(`${API_BASE}/ventas/${id}/liquidar`, {
+  const respuesta = await fetchAutenticado(`${API_BASE}/ventas/${id}/liquidar`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
@@ -78,7 +70,7 @@ export async function obtenerVentasApi(tipo = 'todos') {
     const url = tipo && tipo !== 'todos' 
       ? `${API_BASE}/ventas?tipo=${tipo}&limite=300` 
       : `${API_BASE}/ventas?limite=300`;
-    const respuesta = await fetch(url);
+    const respuesta = await fetchAutenticado(url);
     if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
     const json = await respuesta.json();
     return json.datos || [];
@@ -92,7 +84,7 @@ export async function descargarExcelBackendApi(tipo = 'todos') {
   const url = tipo && tipo !== 'todos' 
     ? `${API_BASE}/ventas/excel?tipo=${tipo}` 
     : `${API_BASE}/ventas/excel`;
-  const respuesta = await fetch(url);
+  const respuesta = await fetchAutenticado(url);
   if (!respuesta.ok) {
     throw new Error('Error al descargar el archivo Excel desde el servidor.');
   }
@@ -111,7 +103,7 @@ export async function descargarExcelBackendApi(tipo = 'todos') {
 }
 
 export async function registrarDanoDepositoApi(id, payload) {
-  const respuesta = await fetch(`${API_BASE}/ventas/${id}/dano-deposito`, {
+  const respuesta = await fetchAutenticado(`${API_BASE}/ventas/${id}/dano-deposito`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
@@ -126,7 +118,7 @@ export async function registrarDanoDepositoApi(id, payload) {
 
 export async function obtenerReservacionesGoogleApi(demo = false) {
   const url = demo ? `${API_BASE}/reservaciones?demo=true` : `${API_BASE}/reservaciones`;
-  const respuesta = await fetch(url);
+  const respuesta = await fetchAutenticado(url);
   const json = await respuesta.json().catch(() => ({}));
   if (!respuesta.ok) {
     throw new Error(json.mensaje || `Error HTTP ${respuesta.status} al consultar Google Calendar`);
@@ -139,7 +131,7 @@ export async function sincronizarCalendariosApi(cabanaId = null) {
     ? `${API_BASE}/reservaciones/sincronizar/${encodeURIComponent(cabanaId)}`
     : `${API_BASE}/reservaciones/sincronizar`;
 
-  const respuesta = await fetch(url, {
+  const respuesta = await fetchAutenticado(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' }
   });
@@ -150,5 +142,3 @@ export async function sincronizarCalendariosApi(cabanaId = null) {
   }
   return json;
 }
-
-
