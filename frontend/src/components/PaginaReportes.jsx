@@ -31,6 +31,7 @@ function obtenerNombreConcepto(v) {
   if (Number(v.miel_litros) > 0) partes.push(`Miel (${v.miel_litros} L)`);
   if (Number(v.huevo_conos) > 0) partes.push(`Huevo (${v.huevo_conos} conos)`);
   if (Number(v.huevo_piezas) > 0) partes.push(`Huevo (${v.huevo_piezas} pz)`);
+  if (Number(v.lena_cargas || v.lena) > 0) partes.push(`Leña (${v.lena_cargas || v.lena})`);
   if (Number(v.tirolesa_boletos) > 0) partes.push(`Tirolesa (${v.tirolesa_boletos})`);
   if (Number(v.cabalgata_30min) > 0) partes.push(`Cabalgata 30m (${v.cabalgata_30min})`);
   if (Number(v.cabalgata_1hora) > 0) partes.push(`Cabalgata 1h (${v.cabalgata_1hora})`);

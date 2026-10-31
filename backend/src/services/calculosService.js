@@ -17,7 +17,9 @@ export const TARIFAS = {
   PAQUETE_GRANJA: 220.0,
   PAQUETE_VIVE: 450.0,
   SENDERISMO_MIN_6: 70.0,
-  SENDERISMO_HASTA_5: 100.0
+  SENDERISMO_HASTA_5: 100.0,
+  LENA: 100.0,
+  LENA_CARGA: 100.0
 };
 
 export function calcularFechasEstancia(fechaCheckinStr, numNoches = 1, horasExtra = 0) {
@@ -130,6 +132,10 @@ export function calcularVenta(datos, cabana = null) {
   const paqueteVive = Math.max(0, Number(datos.paquete_vive) || 0);
   const costoPaqueteVive = paqueteVive * TARIFAS.PAQUETE_VIVE;
 
+  // Leña ($100 por carga)
+  const lenaCargas = Math.max(0, Number(datos.lena_cargas !== undefined ? datos.lena_cargas : datos.lena) || 0);
+  const costoLena = lenaCargas * TARIFAS.LENA;
+
   // Senderismo guiado: $70 si >= 6 personas, $100 si <= 5 personas
   const senderismoPersonas = Math.max(0, Number(datos.senderismo_personas) || 0);
   let senderismoPrecioUnitario = 0;
@@ -154,7 +160,8 @@ export function calcularVenta(datos, cabana = null) {
     costoHuevo +
     costoPaqueteGranja +
     costoPaqueteVive +
-    costoSenderismo;
+    costoSenderismo +
+    costoLena;
 
   const subtotal = costoCabana + costoPersonasExtra + costoHorasExtra + costoActividades;
 
@@ -235,6 +242,10 @@ export function calcularVenta(datos, cabana = null) {
     partesActividades.push(`Huevo Piezas ($4): ${huevoPiezas}`);
     listaDescriptiva.push(`Huevo Rancho (${huevoPiezas} pz)`);
   }
+  if (lenaCargas > 0) {
+    partesActividades.push(`Leña ($100): ${lenaCargas}`);
+    listaDescriptiva.push(`Leña (${lenaCargas})`);
+  }
   const detallesActividades = partesActividades.length > 0 ? partesActividades.join(', ') : 'Ninguna';
   const resumenActividades = listaDescriptiva.length > 0 ? listaDescriptiva.join(', ') : '';
 
@@ -291,6 +302,8 @@ export function calcularVenta(datos, cabana = null) {
     senderismoPersonas,
     senderismoPrecioUnitario,
     costoSenderismo,
+    lenaCargas,
+    costoLena,
     costoActividades,
     subtotal,
     tipoDescuento,

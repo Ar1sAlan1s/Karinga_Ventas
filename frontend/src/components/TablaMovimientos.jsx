@@ -10,7 +10,20 @@ function obtenerNombreConcepto(v) {
   if (Number(v.camping_personas) > 0) partes.push(`Camping (${v.camping_personas} pers.)`);
   if (Number(v.visitas_personas) > 0) partes.push(`Entrada Visitas (${v.visitas_personas})`);
   if (Number(v.fresa_kilos) > 0) partes.push(`Fresa (${v.fresa_kilos} Kg)`);
+  if (Number(v.paquete_granja) > 0) partes.push(`Paquete Granja (${v.paquete_granja})`);
+  if (Number(v.paquete_vive) > 0) partes.push(`Paquete Vive Karinga (${v.paquete_vive})`);
+  if (Number(v.senderismo_personas) > 0) {
+    const pUnit = Number(v.senderismo_precio_unitario) || (Number(v.senderismo_personas) >= 6 ? 70 : 100);
+    partes.push(`Senderismo (${v.senderismo_personas} pers. @ ${pUnit})`);
+  }
+  if (Number(v.gotcha_paquetes) > 0) partes.push(`Gotcha (${v.gotcha_paquetes})`);
+  if (Number(v.interaccion_animales) > 0) partes.push(`Interacción Animales (${v.interaccion_animales})`);
+  if (Number(v.fresa_kilos) > 0) partes.push(`Fresa (${v.fresa_kilos} Kg)`);
   if (Number(v.fresa_medios) > 0) partes.push(`Fresa (${v.fresa_medios} × ½ Kg)`);
+  if (Number(v.miel_litros) > 0) partes.push(`Miel (${v.miel_litros} L)`);
+  if (Number(v.huevo_conos) > 0) partes.push(`Huevo (${v.huevo_conos} conos)`);
+  if (Number(v.huevo_piezas) > 0) partes.push(`Huevo (${v.huevo_piezas} pz)`);
+  if (Number(v.lena_cargas || v.lena) > 0) partes.push(`Leña (${v.lena_cargas || v.lena})`);
   if (Number(v.tirolesa_boletos) > 0) partes.push(`Tirolesa (${v.tirolesa_boletos})`);
   if (Number(v.cabalgata_30min) > 0) partes.push(`Cabalgata 30m (${v.cabalgata_30min})`);
   if (Number(v.cabalgata_1hora) > 0) partes.push(`Cabalgata 1h (${v.cabalgata_1hora})`);

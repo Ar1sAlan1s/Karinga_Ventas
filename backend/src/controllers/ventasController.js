@@ -74,6 +74,7 @@ function normalizarVentaActividad(registro) {
     if (Number(registro.miel_litros) > 0) partes.push(`Miel (${registro.miel_litros} L)`);
     if (Number(registro.huevo_conos) > 0) partes.push(`Huevo (${registro.huevo_conos} conos)`);
     if (Number(registro.huevo_piezas) > 0) partes.push(`Huevo (${registro.huevo_piezas} pz)`);
+    if (Number(registro.lena_cargas || registro.lena) > 0) partes.push(`Leña (${registro.lena_cargas || registro.lena})`);
     if (Number(registro.tirolesa_boletos) > 0) partes.push(`Tirolesa (${registro.tirolesa_boletos})`);
     if (Number(registro.cabalgata_30min) > 0) partes.push(`Cabalgata 30m (${registro.cabalgata_30min})`);
     if (Number(registro.cabalgata_1hora) > 0) partes.push(`Cabalgata 1h (${registro.cabalgata_1hora})`);
@@ -145,6 +146,8 @@ export async function crearVenta(req, res) {
       miel_litros,
       huevo_conos,
       huevo_piezas,
+      lena_cargas,
+      lena,
       paquete_granja,
       paquete_vive,
       senderismo_personas,
@@ -293,6 +296,8 @@ export async function crearVenta(req, res) {
       if (Number(miel_litros) > 0) partesAct.push(`Miel (${miel_litros} L)`);
       if (Number(huevo_conos) > 0) partesAct.push(`Huevo (${huevo_conos} conos)`);
       if (Number(huevo_piezas) > 0) partesAct.push(`Huevo (${huevo_piezas} pz)`);
+      const cantLena = Number(lena_cargas !== undefined ? lena_cargas : lena) || 0;
+      if (cantLena > 0) partesAct.push(`Leña (${cantLena})`);
       if (Number(tirolesa_boletos) > 0) partesAct.push(`Tirolesa (${tirolesa_boletos})`);
       if (Number(cabalgata_30min) > 0) partesAct.push(`Cabalgata 30m (${cabalgata_30min})`);
       if (Number(cabalgata_1hora) > 0) partesAct.push(`Cabalgata 1h (${cabalgata_1hora})`);
@@ -315,6 +320,7 @@ export async function crearVenta(req, res) {
           miel_litros,
           huevo_conos,
           huevo_piezas,
+          lena_cargas: cantLena,
           paquete_granja,
           paquete_vive,
           senderismo_personas,
@@ -375,6 +381,8 @@ export async function crearVenta(req, res) {
         huevo_conos: calculos.huevoConos,
         huevo_piezas: calculos.huevoPiezas,
         costo_huevo: calculos.costoHuevo,
+        lena_cargas: calculos.lenaCargas,
+        costo_lena: calculos.costoLena,
         paquete_granja: calculos.paqueteGranja,
         costo_paquete_granja: calculos.costoPaqueteGranja,
         paquete_vive: calculos.paqueteVive,

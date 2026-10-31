@@ -39,6 +39,7 @@ export default function PaginaInteraccionesMobile({
   const [mielLitros, setMielLitros] = useState(0);
   const [huevoConos, setHuevoConos] = useState(0);
   const [huevoPiezas, setHuevoPiezas] = useState(0);
+  const [lenaCargas, setLenaCargas] = useState(0);
 
   // Paquetes
   const [paqueteGranja, setPaqueteGranja] = useState(0);
@@ -66,6 +67,7 @@ export default function PaginaInteraccionesMobile({
   const totalMiel = mielLitros * TARIFAS_ACTIVIDADES.MIEL_LITRO;
   const totalHuevoCono = huevoConos * TARIFAS_ACTIVIDADES.HUEVO_CONO;
   const totalHuevoPieza = huevoPiezas * TARIFAS_ACTIVIDADES.HUEVO_PIEZA;
+  const totalLena = lenaCargas * TARIFAS_ACTIVIDADES.LENA;
   const totalPaqueteGranja = paqueteGranja * TARIFAS_ACTIVIDADES.PAQUETE_GRANJA;
   const totalPaqueteVive = paqueteVive * TARIFAS_ACTIVIDADES.PAQUETE_VIVE;
 
@@ -86,6 +88,7 @@ export default function PaginaInteraccionesMobile({
     totalMiel +
     totalHuevoCono +
     totalHuevoPieza +
+    totalLena +
     totalPaqueteGranja +
     totalPaqueteVive +
     totalSenderismo;
@@ -250,6 +253,17 @@ export default function PaginaInteraccionesMobile({
       color: '#B45309',
       valor: huevoPiezas,
       set: setHuevoPiezas
+    },
+    {
+      id: 'lena',
+      categoria: 'Rancho & Huerto',
+      titulo: 'Leña (Carga)',
+      subtitulo: 'Para fogata o chimenea',
+      precio: `$${TARIFAS_ACTIVIDADES.LENA} / carga`,
+      icono: 'lena',
+      color: '#EA580C',
+      valor: lenaCargas,
+      set: setLenaCargas
     }
   ];
 
@@ -287,6 +301,7 @@ export default function PaginaInteraccionesMobile({
       miel_litros: mielLitros,
       huevo_conos: huevoConos,
       huevo_piezas: huevoPiezas,
+      lena_cargas: lenaCargas,
       paquete_granja: paqueteGranja,
       paquete_vive: paqueteVive,
       senderismo_personas: senderismoPersonas,
@@ -306,6 +321,7 @@ export default function PaginaInteraccionesMobile({
         setMielLitros(0);
         setHuevoConos(0);
         setHuevoPiezas(0);
+        setLenaCargas(0);
         setPaqueteGranja(0);
         setPaqueteVive(0);
         setSenderismoPersonas(0);

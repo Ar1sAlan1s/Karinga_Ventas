@@ -35,6 +35,7 @@ export default function PaginaInteracciones({
   const [mielLitros, setMielLitros] = useState(0);
   const [huevoConos, setHuevoConos] = useState(0);
   const [huevoPiezas, setHuevoPiezas] = useState(0);
+  const [lenaCargas, setLenaCargas] = useState(0);
 
   // Paquetes Especiales Karinga
   const [paqueteGranja, setPaqueteGranja] = useState(0);
@@ -65,6 +66,7 @@ export default function PaginaInteracciones({
   const costoInteraccion = interaccionAnimales * TARIFAS_ACTIVIDADES.INTERACCION_ANIMALES;
   const costoMiel = mielLitros * TARIFAS_ACTIVIDADES.MIEL_LITRO;
   const costoHuevo = (huevoConos * TARIFAS_ACTIVIDADES.HUEVO_CONO) + (huevoPiezas * TARIFAS_ACTIVIDADES.HUEVO_PIEZA);
+  const costoLena = lenaCargas * TARIFAS_ACTIVIDADES.LENA;
 
   const costoPaqueteGranja = paqueteGranja * TARIFAS_ACTIVIDADES.PAQUETE_GRANJA;
   const costoPaqueteVive = paqueteVive * TARIFAS_ACTIVIDADES.PAQUETE_VIVE;
@@ -85,7 +87,8 @@ export default function PaginaInteracciones({
     costoHuevo +
     costoPaqueteGranja +
     costoPaqueteVive +
-    costoSenderismo;
+    costoSenderismo +
+    costoLena;
 
   const anticipoEfectivo = tieneAnticipo ? (Number(montoAnticipo) || 0) : 0;
   const saldoALiquidar = Math.max(0, Math.round((subtotalActividades - anticipoEfectivo) * 100) / 100);
@@ -114,6 +117,7 @@ export default function PaginaInteracciones({
     if (mielLitros > 0) partesDesc.push(`Miel (${mielLitros} L)`);
     if (huevoConos > 0) partesDesc.push(`Huevo (${huevoConos} conos)`);
     if (huevoPiezas > 0) partesDesc.push(`Huevo (${huevoPiezas} pz)`);
+    if (lenaCargas > 0) partesDesc.push(`Leña (${lenaCargas})`);
     if (tirolesaBoletos > 0) partesDesc.push(`Tirolesa (${tirolesaBoletos})`);
     if (cabalgata30min > 0) partesDesc.push(`Cabalgata 30m (${cabalgata30min})`);
     if (cabalgata1hora > 0) partesDesc.push(`Cabalgata 1h (${cabalgata1hora})`);
@@ -153,6 +157,7 @@ export default function PaginaInteracciones({
       miel_litros: mielLitros,
       huevo_conos: huevoConos,
       huevo_piezas: huevoPiezas,
+      lena_cargas: lenaCargas,
       paquete_granja: paqueteGranja,
       paquete_vive: paqueteVive,
       senderismo_personas: senderismoPersonas,
@@ -174,6 +179,7 @@ export default function PaginaInteracciones({
       setMielLitros(0);
       setHuevoConos(0);
       setHuevoPiezas(0);
+      setLenaCargas(0);
       setPaqueteGranja(0);
       setPaqueteVive(0);
       setSenderismoPersonas(0);
@@ -680,6 +686,25 @@ export default function PaginaInteracciones({
                 <button type="button" className="karinga-btn-contador" onClick={() => actualizarValor(huevoPiezas, 1, setHuevoPiezas)}>+</button>
               </div>
             </div>
+
+            {/* Leña para Fogata / Chimenea */}
+            <div className={`karinga-actividad-item ${lenaCargas > 0 ? 'activa' : ''}`}>
+              <div className="karinga-actividad-cabecera">
+                <div>
+                  <span className="karinga-actividad-nombre" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <Icono nombre="lena" tamano={16} color="#EA580C" />
+                    <span>Leña (Carga)</span>
+                  </span>
+                  <small style={{ display: 'block', color: 'var(--gris-medio)', fontSize: '0.74rem' }}>Para fogata o chimenea</small>
+                </div>
+                <span className="karinga-actividad-precio">${TARIFAS_ACTIVIDADES.LENA} c/u</span>
+              </div>
+              <div className="karinga-control-contador">
+                <button type="button" className="karinga-btn-contador" onClick={() => actualizarValor(lenaCargas, -1, setLenaCargas)}>-</button>
+                <input type="number" min="0" className="karinga-input-contador" value={lenaCargas} onChange={(e) => setLenaCargas(Math.max(0, parseInt(e.target.value, 10) || 0))} />
+                <button type="button" className="karinga-btn-contador" onClick={() => actualizarValor(lenaCargas, 1, setLenaCargas)}>+</button>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -874,6 +899,12 @@ export default function PaginaInteracciones({
                   <div className="karinga-ticket-linea">
                     <span>Huevo ({huevoPiezas} pz)</span>
                     <strong>${(huevoPiezas * TARIFAS_ACTIVIDADES.HUEVO_PIEZA).toLocaleString('es-MX', { minimumFractionDigits: 2 })}</strong>
+                  </div>
+                )}
+                {lenaCargas > 0 && (
+                  <div className="karinga-ticket-linea">
+                    <span>Leña ({lenaCargas})</span>
+                    <strong>${costoLena.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</strong>
                   </div>
                 )}
 
