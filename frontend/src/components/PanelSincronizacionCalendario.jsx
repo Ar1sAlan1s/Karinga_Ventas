@@ -254,6 +254,13 @@ export default function PanelSincronizacionCalendario({
             <span>{sincronizandoGlobal ? 'Sincronizando Todos...' : 'Sincronizar Todos'}</span>
           </button>
         </div>
+        {sincronizandoGlobal && (
+          <div style={{ width: '100%', textAlign: 'right', marginTop: '0.35rem' }}>
+            <span style={{ fontSize: '0.75rem', color: '#15803D', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+              Consultando 13 calendarios en Google Calendar (puede tomar ~15s)...
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Notificación de Resultado */}

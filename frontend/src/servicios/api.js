@@ -131,16 +131,34 @@ export async function sincronizarCalendariosApi(cabanaId = null) {
     ? `${API_BASE}/reservaciones/sincronizar/${encodeURIComponent(cabanaId)}`
     : `${API_BASE}/reservaciones/sincronizar`;
 
-  const respuesta = await fetchAutenticado(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' }
-  });
+  const controller = new AbortController();
+  const timeoutMs = 60000; // 60 segundos de tolerancia para sincronización masiva
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-  const json = await respuesta.json().catch(() => ({}));
-  if (!respuesta.ok) {
-    throw new Error(json.mensaje || `Error al sincronizar con Google Calendar (HTTP ${respuesta.status})`);
+  try {
+    const respuesta = await fetchAutenticado(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    const json = await respuesta.json().catch(() => ({}));
+    if (!respuesta.ok) {
+      throw new Error(json.mensaje || `Error al sincronizar con Google Calendar (HTTP ${respuesta.status})`);
+    }
+    return json;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      throw new Error('La sincronización tardó más de 60 segundos. Por favor revise su conexión o intente sincronizar cabañas individuales.');
+    }
+    if (error.name === 'TypeError' && (error.message.includes('fetch') || error.message.includes('NetworkError'))) {
+      throw new Error('No se pudo conectar con el servidor backend. El servidor puede estar reiniciándose o la red tardó en responder. Por favor intente nuevamente en unos segundos.');
+    }
+    throw error;
   }
-  return json;
 }
 
 export async function eliminarVentaApi(id, forzar = false) {
