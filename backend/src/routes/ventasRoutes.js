@@ -6,7 +6,8 @@ import {
   asignarHorasExtra,
   liquidarSaldo,
   registrarDanoDeposito,
-  descargarReporteExcel
+  descargarReporteExcel,
+  eliminarVenta
 } from '../controllers/ventasController.js';
 
 const router = Router();
@@ -18,5 +19,6 @@ router.get('/excel', descargarReporteExcel);
 router.post('/:id/horas-extra', asignarHorasExtra);
 router.post('/:id/liquidar', liquidarSaldo);
 router.post('/:id/dano-deposito', registrarDanoDeposito);
+router.delete('/:id', eliminarVenta);
 
 export default router;

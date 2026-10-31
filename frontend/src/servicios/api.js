@@ -142,3 +142,16 @@ export async function sincronizarCalendariosApi(cabanaId = null) {
   }
   return json;
 }
+
+export async function eliminarVentaApi(id, forzar = false) {
+  const url = forzar ? `${API_BASE}/ventas/${id}?forzar=true` : `${API_BASE}/ventas/${id}`;
+  const respuesta = await fetchAutenticado(url, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' }
+  });
+  const json = await respuesta.json().catch(() => ({}));
+  if (!respuesta.ok) {
+    throw new Error(json.mensaje || `Error al eliminar la venta o reservación (HTTP ${respuesta.status})`);
+  }
+  return json;
+}

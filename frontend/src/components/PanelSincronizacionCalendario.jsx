@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import Icono from './Icono';
-import { sincronizarCalendariosApi } from '../servicios/api';
+import { sincronizarCalendariosApi, eliminarVentaApi } from '../servicios/api';
 import {
   obtenerSemanaActual,
   obtenerProximaSemana,
@@ -17,6 +17,7 @@ export default function PanelSincronizacionCalendario({
 }) {
   const [sincronizandoGlobal, setSincronizandoGlobal] = useState(false);
   const [sincronizandoId, setSincronizandoId] = useState(null);
+  const [eliminandoId, setEliminandoId] = useState(null);
   const [mensajeResultado, setMensajeResultado] = useState(null);
   const [mostrarDetalleCabanas, setMostrarDetalleCabanas] = useState(false);
   const [mostrarPendientes, setMostrarPendientes] = useState(true);
@@ -93,6 +94,36 @@ export default function PanelSincronizacionCalendario({
   const totalSaldoMostrado = useMemo(() => {
     return reservacionesMostradas.reduce((acc, r) => acc + (Number(r.saldo_pendiente) || Number(r.total) || 0), 0);
   }, [reservacionesMostradas]);
+
+  
+  const manejarEliminarReserva = async (reserva) => {
+    const nombre = reserva.nombre_reservacion || 'esta reservación';
+    const cabana = reserva.cabana_nombre || '';
+    const confirmar = window.confirm(
+      `¿Deseas eliminar la reservación de "${nombre}" (${cabana})?\n\nSi la reservación fue cancelada o movida en Google Calendar, esta acción la removerá de la base de datos para no tener información falsa en la semana.`
+    );
+
+    if (!confirmar) return;
+
+    setEliminandoId(reserva.id);
+    try {
+      const res = await eliminarVentaApi(reserva.id);
+      setMensajeResultado({
+        tipo: 'exito',
+        texto: res.mensaje || `Reservación de "${nombre}" eliminada exitosamente.`
+      });
+      if (alRecargarVentas) {
+        await alRecargarVentas();
+      }
+    } catch (err) {
+      setMensajeResultado({
+        tipo: 'error',
+        texto: err.message || 'Error al eliminar la reservación.'
+      });
+    } finally {
+      setEliminandoId(null);
+    }
+  };
 
   const ejecutarSincronizacion = async (cabanaId = null, nombreCabana = null) => {
     if (cabanaId === null) {
@@ -729,6 +760,30 @@ export default function PanelSincronizacionCalendario({
                             <span>Cobrar Check-in</span>
                           </button>
                         )}
+
+                        <button
+                          type="button"
+                          onClick={() => manejarEliminarReserva(r)}
+                          disabled={eliminandoId === r.id}
+                          style={{
+                            background: '#FEF2F2',
+                            color: '#B91C1C',
+                            border: '1px solid #FECACA',
+                            padding: '0.45rem 0.65rem',
+                            borderRadius: '6px',
+                            fontSize: '0.78rem',
+                            fontWeight: 700,
+                            cursor: eliminandoId === r.id ? 'not-allowed' : 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.3rem',
+                            transition: 'all 0.15s ease'
+                          }}
+                          title="Descartar o eliminar esta reservación si fue cancelada o movida en Google Calendar"
+                        >
+                          <Icono nombre="trash" tamano={13} color="#B91C1C" />
+                          <span>{eliminandoId === r.id ? '...' : 'Descartar'}</span>
+                        </button>
                       </div>
                     </div>
                   );

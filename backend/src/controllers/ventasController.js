@@ -966,3 +966,83 @@ export async function registrarDanoDeposito(req, res) {
   }
 }
 
+/**
+ * Elimina o cancela una venta / reservación.
+ * DELETE /api/ventas/:id
+ * Opciones vía query o body:
+ * - forzar: true -> Elimina físicamente de la base de datos incluso si tenía pagos.
+ * Si no es forzado y no tiene pagos: se elimina físicamente de la base de datos.
+ * Si no es forzado y tiene pagos: se cambia el estado a 'cancelada' y saldo_pendiente a 0 para preservar contabilidad.
+ */
+export async function eliminarVenta(req, res) {
+  try {
+    const { id } = req.params;
+    const forzar = req.query.forzar === 'true' || req.body?.forzar === true;
+
+    // 1. Buscar primero en ventas_cabanas
+    const ventaCabana = await db('ventas_cabanas').where({ id }).first();
+
+    if (ventaCabana) {
+      const anticipo = Number(ventaCabana.anticipo) || 0;
+      const liquidado = Number(ventaCabana.monto_liquidado) || 0;
+      const totalPagado = anticipo + liquidado;
+
+      if (totalPagado > 0 && !forzar) {
+        // Reservación con cobro registrado: se cancela y se libera saldo pendiente para no afectar cortes de caja
+        let notasActualizadas = ventaCabana.notas || '';
+        if (!notasActualizadas.includes('[CANCELADA POR USUARIO]')) {
+          notasActualizadas = `[CANCELADA POR USUARIO - CONSERVA PAGO: $${totalPagado.toFixed(2)} MXN] ${notasActualizadas}`.trim();
+        }
+
+        await db('ventas_cabanas').where({ id }).update({
+          estado_pago: 'cancelada',
+          saldo_pendiente: 0.0,
+          notas: notasActualizadas,
+          updated_at: new Date()
+        });
+
+        return res.status(200).json({
+          exito: true,
+          accion: 'cancelada',
+          mensaje: `La reservación de "${ventaCabana.nombre_reservacion}" tiene pagos registrados ($${totalPagado.toFixed(2)} MXN). Se marcó como cancelada y se liberó el saldo pendiente para proteger el corte de caja contable.`,
+          id: Number(id)
+        });
+      }
+
+      // Si no tiene pagos o se solicitó forzar: eliminación física
+      await db('ventas_cabanas').where({ id }).del();
+
+      return res.status(200).json({
+        exito: true,
+        accion: 'eliminada',
+        mensaje: `Reservación de "${ventaCabana.nombre_reservacion}" eliminada correctamente del sistema.`,
+        id: Number(id)
+      });
+    }
+
+    // 2. Si no es de cabaña, buscar en ventas_actividades
+    const ventaActividad = await db('ventas_actividades').where({ id }).first();
+
+    if (ventaActividad) {
+      await db('ventas_actividades').where({ id }).del();
+      return res.status(200).json({
+        exito: true,
+        accion: 'eliminada',
+        mensaje: `Registro de actividad #${id} (${ventaActividad.cliente_nombre}) eliminado correctamente.`,
+        id: Number(id)
+      });
+    }
+
+    return res.status(404).json({
+      exito: false,
+      mensaje: `No se encontró ninguna venta o reservación con el ID ${id}.`
+    });
+  } catch (error) {
+    console.error('Error al eliminar venta / reservación:', error);
+    return res.status(500).json({
+      exito: false,
+      mensaje: 'Error interno al eliminar la venta o reservación',
+      error: error.message
+    });
+  }
+}
