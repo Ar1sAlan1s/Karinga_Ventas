@@ -40,7 +40,7 @@ export default function MetodoPago({ metodoSeleccionado, alCambiarMetodo }) {
               className={`karinga-boton-opcion ${esActivo ? 'activo' : ''}`}
               onClick={() => alCambiarMetodo(metodo.id)}
             >
-              <Icono nombre={obtenerIconoNombre(metodo.id)} tamano={20} color={esActivo ? '#FFFFFF' : 'currentColor'} />
+              <Icono nombre={obtenerIconoNombre(metodo.id)} tamano={20} color={esActivo ? 'var(--verde-oscuro)' : 'currentColor'} />
               <span>{metodo.etiqueta}</span>
             </button>
           );

@@ -132,8 +132,9 @@ export default function Icono({ nombre, tamano = 18, color = 'currentColor', cla
     case 'tarjeta':
       return (
         <svg {...propsBase}>
-          <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-          <line x1="1" y1="10" x2="23" y2="10" />
+          <rect x="2" y="5" width="20" height="14" rx="2" />
+          <line x1="2" y1="10" x2="22" y2="10" />
+          <line x1="6" y1="15" x2="10" y2="15" />
         </svg>
       );
 
@@ -142,8 +143,8 @@ export default function Icono({ nombre, tamano = 18, color = 'currentColor', cla
     case 'money-bill':
       return (
         <svg {...propsBase}>
-          <rect x="2" y="6" width="20" height="12" rx="2" />
-          <circle cx="12" cy="12" r="2.5" />
+          <rect x="2" y="5" width="20" height="14" rx="2" />
+          <circle cx="12" cy="12" r="3" />
           <path d="M6 12h.01M18 12h.01" />
         </svg>
       );
