@@ -160,7 +160,20 @@ export default function PaginaReportes({
       });
     }
 
-    return resultado;
+    // 4. Ordenar cronológicamente de Lunes a Domingo (ascendente por fecha)
+    // y dentro del mismo día por nombre de cabaña/concepto y hora
+    return [...resultado].sort((a, b) => {
+      const fechaA = String(a.fecha_checkin || a.fecha || '').split('T')[0];
+      const fechaB = String(b.fecha_checkin || b.fecha || '').split('T')[0];
+      if (fechaA !== fechaB) {
+        return fechaA.localeCompare(fechaB); // Lunes -> Martes -> ... -> Domingo
+      }
+      const cabA = String(a.cabana_nombre || a.concepto || '');
+      const cabB = String(b.cabana_nombre || b.concepto || '');
+      const cmpCab = cabA.localeCompare(cabB);
+      if (cmpCab !== 0) return cmpCab;
+      return String(a.hora || '').localeCompare(String(b.hora || ''));
+    });
   }, [ventas, filtroTipo, claveSemanaEfectiva, busqueda]);
 
   const totalCobrado = ventasFiltradas.reduce((acc, v) => acc + (Number(v.total) || 0), 0);
@@ -241,6 +254,19 @@ export default function PaginaReportes({
 
     return Object.values(mapa);
   }, [ventasFiltradas]);
+
+  const formatearFechaConNombreDia = (fechaStr) => {
+    if (!fechaStr) return { dia: '-', fecha: '-' };
+    const str = String(fechaStr).split('T')[0];
+    const partes = str.split('-').map(Number);
+    if (partes.length < 3) return { dia: '', fecha: str };
+    const [anio, mes, dia] = partes;
+    const fechaObj = new Date(anio, mes - 1, dia);
+    const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const diaNombre = dias[fechaObj.getDay()] || '';
+    const fechaFmt = `${String(dia).padStart(2, '0')}/${String(mes).padStart(2, '0')}/${anio}`;
+    return { dia: diaNombre, fecha: fechaFmt };
+  };
 
   const formatearFecha = (fecha) => {
     if (!fecha) return '-';
@@ -653,8 +679,20 @@ export default function PaginaReportes({
                   return (
                     <tr key={v.id || `${v.fecha}-${v.hora}-${v.nombre_reservacion}`}>
                       <td>
-                        <strong>{formatearFecha(v.fecha)}</strong>
-                        <small style={{ display: 'block', color: '#64748B', fontSize: '0.75rem' }}>{v.hora || ''}</small>
+                        {(() => {
+                          const { dia, fecha } = formatearFechaConNombreDia(v.fecha);
+                          return (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+                              <span style={{ fontWeight: 800, color: '#1B4D3E', fontSize: '0.86rem', textTransform: 'capitalize' }}>
+                                {dia}
+                              </span>
+                              <span style={{ color: '#334155', fontSize: '0.8rem', fontWeight: 600 }}>
+                                {fecha}
+                              </span>
+                              <small style={{ color: '#64748B', fontSize: '0.74rem' }}>{v.hora || '15:00'}</small>
+                            </div>
+                          );
+                        })()}
                       </td>
                       <td>
                         {infoSem ? (

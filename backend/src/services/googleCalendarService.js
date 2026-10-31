@@ -343,11 +343,15 @@ export async function sincronizarYCrearReservacionesEnDb({ cabanaId = null } = {
 
   let totalCreadas = 0;
   let totalActualizadas = 0;
+  let totalEliminadas = 0;
+  let totalCanceladas = 0;
   let totalOmitidas = 0;
   let totalEventosEncontrados = 0;
   const detalleCalendarios = [];
   const reservacionesCreadas = [];
   const reservacionesActualizadas = [];
+  const reservacionesEliminadas = [];
+  const reservacionesCanceladas = [];
 
   // Consultar los calendarios requeridos simultáneamente
   const promesas = calendarios.map(async (cal) => {
@@ -593,6 +597,8 @@ export async function sincronizarYCrearReservacionesEnDb({ cabanaId = null } = {
         actualizadas: actualizadasEnEsteCal,
         omitidas: omitidasEnEsteCal,
         total: eventosValidos.length,
+        cabanaId: cabanaDb.id,
+        eventosValidosIds: eventosValidos.map((ev) => String(ev.id)),
         creadasList,
         actualizadasList
       };
@@ -637,6 +643,90 @@ export async function sincronizarYCrearReservacionesEnDb({ cabanaId = null } = {
         totalEventos: d.total,
         error: d.error || null
       });
+    }
+  }
+
+  // --- FASE DE RECONCILIACIÓN Y LIMPIEZA DE CANCELACIONES / MOVIMIENTOS ---
+  // Identificar calendarios consultados exitosamente para proteger de fallos temporales de red
+  const calendariosExitosos = resultados
+    .filter((r) => r.status === 'fulfilled' && r.value.exito)
+    .map((r) => r.value);
+
+  if (calendariosExitosos.length > 0) {
+    const cabanasIdsSincronizadas = [...new Set(calendariosExitosos.map((c) => c.cabanaId).filter(Boolean))];
+    const gcalEventIdsActivos = new Set(
+      calendariosExitosos.flatMap((c) => c.eventosValidosIds || [])
+    );
+    const fechaCorteMinima = timeMin.split('T')[0];
+
+    // Buscar reservaciones en DB a partir de la fecha de corte para las cabañas consultadas
+    const reservasEnDb = await db('ventas_cabanas')
+      .whereIn('cabana_id', cabanasIdsSincronizadas)
+      .andWhere(function () {
+        this.where('fecha_checkin', '>=', fechaCorteMinima)
+          .orWhere('fecha', '>=', fechaCorteMinima);
+      })
+      .andWhere('notas', 'like', '%[GCAL_EVENT_ID:%')
+      .select(
+        'id',
+        'cabana_id',
+        'cabana_nombre',
+        'nombre_reservacion',
+        'fecha_checkin',
+        'fecha_checkout',
+        'anticipo',
+        'monto_liquidado',
+        'estado_pago',
+        'notas'
+      );
+
+    for (const rDb of reservasEnDb) {
+      // Si ya está marcada como cancelada previamente, no la procesamos de nuevo
+      if (rDb.estado_pago === 'cancelada') continue;
+
+      const matchGcal = (rDb.notas || '').match(/\[GCAL_EVENT_ID:([^\]]+)\]/);
+      const gcalId = matchGcal ? matchGcal[1].trim() : null;
+
+      // Si tiene identificador de Google Calendar y YA NO existe en Google Calendar activo
+      if (gcalId && !gcalEventIdsActivos.has(gcalId)) {
+        const anticipo = Number(rDb.anticipo) || 0;
+        const liquidado = Number(rDb.monto_liquidado) || 0;
+        const totalPagado = anticipo + liquidado;
+
+        if (totalPagado <= 0) {
+          // Sin pagos: se elimina físicamente de la BD para liberar la semana y quitar datos falsos
+          await db('ventas_cabanas').where({ id: rDb.id }).del();
+          totalEliminadas++;
+          reservacionesEliminadas.push({
+            id: rDb.id,
+            nombre_reservacion: rDb.nombre_reservacion,
+            cabana_nombre: rDb.cabana_nombre,
+            fecha_checkin: rDb.fecha_checkin,
+            fecha_checkout: rDb.fecha_checkout,
+            motivo: 'Eliminada o cancelada en Google Calendar'
+          });
+        } else {
+          // Con pagos: se cancela y se quita el saldo pendiente para no afectar cortes de caja
+          let notasActualizadas = rDb.notas || '';
+          if (!notasActualizadas.includes('[CANCELADA EN GOOGLE CALENDAR]')) {
+            notasActualizadas = `[CANCELADA EN GOOGLE CALENDAR - PAGO REGISTRADO: $${totalPagado.toFixed(2)} MXN] ${notasActualizadas}`.trim();
+          }
+          await db('ventas_cabanas').where({ id: rDb.id }).update({
+            estado_pago: 'cancelada',
+            saldo_pendiente: 0.0,
+            notas: notasActualizadas
+          });
+          totalCanceladas++;
+          reservacionesCanceladas.push({
+            id: rDb.id,
+            nombre_reservacion: rDb.nombre_reservacion,
+            cabana_nombre: rDb.cabana_nombre,
+            fecha_checkin: rDb.fecha_checkin,
+            total_pagado: totalPagado,
+            motivo: 'Cancelada en Google Calendar (pago conservado)'
+          });
+        }
+      }
     }
   }
 
@@ -686,6 +776,12 @@ export async function sincronizarYCrearReservacionesEnDb({ cabanaId = null } = {
   if (totalActualizadas > 0) {
     partes.push(`${totalActualizadas} actualizada(s) por cambio de cabaña/fechas`);
   }
+  if (totalEliminadas > 0) {
+    partes.push(`${totalEliminadas} eliminada(s) por cancelación en Google Calendar`);
+  }
+  if (totalCanceladas > 0) {
+    partes.push(`${totalCanceladas} marcada(s) como cancelada(s) con pago conservado`);
+  }
   partes.push(`${totalOmitidas} sin cambios`);
 
   return {
@@ -693,10 +789,14 @@ export async function sincronizarYCrearReservacionesEnDb({ cabanaId = null } = {
     mensaje: `Sincronización ${cabanaTexto}: ${partes.join(', ')}.`,
     creadas: totalCreadas,
     actualizadas: totalActualizadas,
+    eliminadas: totalEliminadas,
+    canceladas: totalCanceladas,
     omitidas: totalOmitidas,
     totalEventos: totalEventosEncontrados,
     reservacionesCreadas,
     reservacionesActualizadas,
+    reservacionesEliminadas,
+    reservacionesCanceladas,
     calendarios: detalleCalendarios
   };
 }
