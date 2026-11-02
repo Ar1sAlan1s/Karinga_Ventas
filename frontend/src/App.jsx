@@ -149,23 +149,34 @@ export default function App() {
   };
 
   const manejarAsignarHorasExtra = async (ventaId, horasOPayload, metodoPago, alCompletar) => {
-    let numHoras;
-    let metodo;
+    let payload;
     let callback = alCompletar;
 
     if (typeof horasOPayload === 'object' && horasOPayload !== null) {
-      numHoras = Number(horasOPayload.horas_extra) || 1;
-      metodo = horasOPayload.metodo_pago || 'Efectivo';
+      payload = {
+        horas_extra: Math.max(0, parseInt(horasOPayload.horas_extra, 10) || 0),
+        personas_extra: Math.max(0, parseInt(horasOPayload.personas_extra, 10) || 0),
+        otro_extra_concepto: horasOPayload.otro_extra_concepto ? String(horasOPayload.otro_extra_concepto).trim() : '',
+        otro_extra_monto: Math.max(0, parseFloat(horasOPayload.otro_extra_monto) || 0),
+        metodo_pago: horasOPayload.metodo_pago || 'Efectivo',
+        notas: horasOPayload.notas ? String(horasOPayload.notas).trim() : ''
+      };
       if (typeof metodoPago === 'function') callback = metodoPago;
     } else {
-      numHoras = Number(horasOPayload) || 1;
-      metodo = metodoPago || 'Efectivo';
+      payload = {
+        horas_extra: Math.max(0, parseInt(horasOPayload, 10) || 0),
+        personas_extra: 0,
+        otro_extra_concepto: '',
+        otro_extra_monto: 0,
+        metodo_pago: metodoPago || 'Efectivo',
+        notas: ''
+      };
     }
 
     setRegistrando(true);
     try {
-      const res = await asignarHorasExtraApi(ventaId, { horas_extra: numHoras, metodo_pago: metodo });
-      setMensajeToast({ tipo: 'exito', texto: res.mensaje || 'Horas extra asignadas con éxito' });
+      const res = await asignarHorasExtraApi(ventaId, payload);
+      setMensajeToast({ tipo: 'exito', texto: res.mensaje || 'Extras asignados con éxito' });
       await recargarVentas();
       if (callback) callback();
     } catch (err) {
