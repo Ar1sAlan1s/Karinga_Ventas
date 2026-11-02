@@ -611,6 +611,14 @@ function generarHojaEstadisticas(ventas, claveSemana, semanaActual, tipoFiltro =
       conteoMetodos[metLiq].trans += 1;
     }
 
+    const montoExt = Number(v.monto_extras_pagado) || 0;
+    const metExt = v.metodo_pago_extras;
+    if (montoExt > 0 && metExt) {
+      if (!conteoMetodos[metExt]) conteoMetodos[metExt] = { metodo: metExt, total: 0, trans: 0 };
+      conteoMetodos[metExt].total += montoExt;
+      conteoMetodos[metExt].trans += 1;
+    }
+
     const dano = obtenerDanoDeposito(v);
     if (dano.monto > 0) {
       const metDano = 'Efectivo';

@@ -55,6 +55,34 @@ function normalizarVentaCabana(registro) {
     }
   }
 
+  let mExtrasPagado = Number(registro.monto_extras_pagado) || 0;
+  let metExtras = registro.metodo_pago_extras || null;
+  let metLiq = registro.metodo_pago_liquidacion;
+  let montoLiq = Number(registro.monto_liquidado) || 0;
+
+  // Si notas contiene el desglose original de check-in, asegurar consistencia de métodos
+  if (registro.notas && registro.notas.includes('[Check-in liquidado:')) {
+    const mChk = /\[Check-in liquidado:\s*\$([0-9.,]+)\s*vía\s*([^\](]+)/i.exec(registro.notas);
+    if (mChk) {
+      metLiq = mChk[2].trim();
+      const checkinMonto = parseFloat(mChk[1]) || 0;
+      if (checkinMonto > 0 && montoLiq > checkinMonto) {
+        if (mExtrasPagado === 0) {
+          mExtrasPagado = Math.max(0, montoLiq - checkinMonto);
+        }
+        montoLiq = checkinMonto;
+      }
+    }
+  }
+
+  if (!metExtras && registro.notas && registro.notas.includes('[Extras:')) {
+    const mExt = /\[Extras:[^\]]+pagado con\s+([^\]]+)\]/i.exec(registro.notas);
+    if (mExt && mExt[1]) {
+      metExtras = mExt[1].trim();
+      if (mExtrasPagado === 0) mExtrasPagado = oExtraMonto;
+    }
+  }
+
   const cobrosExtraTotal = costoHExtra + costoPExtra + cargoDano + oExtraMonto;
 
   return {
@@ -63,8 +91,12 @@ function normalizarVentaCabana(registro) {
     nombre_reservacion: registro.nombre_reservacion || 'Sin Nombre',
     cliente_nombre: registro.nombre_reservacion || 'Sin Nombre',
     costo_cabana: Number(registro.costo_cabana) || 0,
+    monto_liquidado: montoLiq,
+    metodo_pago_liquidacion: metLiq,
     otro_extra_monto: oExtraMonto,
     otro_extra_concepto: oExtraConcepto,
+    monto_extras_pagado: mExtrasPagado,
+    metodo_pago_extras: metExtras,
     cobros_extra_total: cobrosExtraTotal,
     cobros_extra_detalle: cobrosExtraDetalle
   };
@@ -531,8 +563,24 @@ export async function asignarHorasExtra(req, res) {
     const descuento = Number(ventaExistente.descuento_especial) || 0;
     const nuevoTotal = Math.max(0, nuevoSubtotal - descuento);
 
-    const montoLiqPrevio = Number(ventaExistente.monto_liquidado) || 0;
-    const nuevoMontoLiquidado = montoLiqPrevio + cargoTotalAdicional;
+    // Extras pagados por separado (NO inflan ni sobrescriben la liquidación del check-in)
+    const montoExtrasPrevio = Number(ventaExistente.monto_extras_pagado) || 0;
+    const nuevoMontoExtrasPagado = montoExtrasPrevio + cargoTotalAdicional;
+    const nuevoMetodoPagoExtras = metodo_pago;
+
+    let metodoLiqPreservado = ventaExistente.metodo_pago_liquidacion;
+    let montoLiqPreservado = Number(ventaExistente.monto_liquidado) || 0;
+
+    if (ventaExistente.notas && ventaExistente.notas.includes('[Check-in liquidado:')) {
+      const mChk = /\[Check-in liquidado:\s*\$([0-9.,]+)\s*vía\s*([^\](]+)/i.exec(ventaExistente.notas);
+      if (mChk) {
+        metodoLiqPreservado = mChk[2].trim();
+        const checkinMonto = parseFloat(mChk[1]) || 0;
+        if (checkinMonto > 0) {
+          montoLiqPreservado = checkinMonto;
+        }
+      }
+    }
 
     const partesDesc = [];
     if (numHoras > 0) partesDesc.push(`+${numHoras}h extra ($${cargoHoras})`);
@@ -554,10 +602,12 @@ export async function asignarHorasExtra(req, res) {
         costo_personas_extra: nuevoCostoPersonasExtra,
         otro_extra_monto: nuevoOtroExtraMonto,
         otro_extra_concepto: nuevoOtroExtraConcepto,
+        monto_extras_pagado: nuevoMontoExtrasPagado,
+        metodo_pago_extras: nuevoMetodoPagoExtras,
         subtotal: nuevoSubtotal,
         total: nuevoTotal,
-        monto_liquidado: nuevoMontoLiquidado,
-        metodo_pago_liquidacion: metodo_pago,
+        monto_liquidado: montoLiqPreservado,
+        metodo_pago_liquidacion: metodoLiqPreservado,
         concepto: nuevoConcepto,
         notas: nuevasNotas,
         updated_at: new Date()

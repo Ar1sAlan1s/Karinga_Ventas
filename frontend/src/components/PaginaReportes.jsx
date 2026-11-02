@@ -234,6 +234,17 @@ export default function PaginaReportes({
         mapa[metLiq].cantidad += 1;
       }
 
+      // Cobros extras pagados por separado (horas libres, toallas, cobijas, leña, etc.)
+      const montoExt = Number(v.monto_extras_pagado) || 0;
+      const metExt = v.metodo_pago_extras;
+      if (montoExt > 0 && metExt) {
+        if (!mapa[metExt]) {
+          mapa[metExt] = { id: metExt, nombre: metExt, icono: 'cash', color: '#475569', total: 0, cantidad: 0 };
+        }
+        mapa[metExt].total += montoExt;
+        mapa[metExt].cantidad += 1;
+      }
+
       // Daño retenido del depósito en garantía (siempre ingresa en Efectivo)
       let montoDano = 0;
       if (v.concepto && v.concepto.includes('[Daño/Pérdida:')) {
@@ -681,6 +692,8 @@ export default function PaginaReportes({
                   const nombreCliente = v.nombre_reservacion || (esCabana ? 'Sin Huésped' : 'Público General');
                   const metodoAnticipo = v.metodo_pago_anticipo || (ant > 0 ? v.metodo_pago : '-');
                   const metodoLiquidacion = v.metodo_pago_liquidacion || (v.estado_pago === 'liquidado' ? v.metodo_pago : '-');
+                  const montoExtras = Number(v.monto_extras_pagado) || 0;
+                  const metodoExtras = v.metodo_pago_extras;
                   const infoSem = obtenerInfoSemana(v.fecha);
 
                   return (
@@ -840,14 +853,30 @@ export default function PaginaReportes({
                         ) : '-'}
                       </td>
                       <td style={{ color: montoLiq > 0 ? '#15803D' : 'inherit', fontWeight: montoLiq > 0 ? 700 : 'normal' }}>
-                        {montoLiq > 0 ? `$${montoLiq.toLocaleString('es-MX', { minimumFractionDigits: 2 })}` : '-'}
+                        {montoLiq > 0 && (
+                          <div>${montoLiq.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</div>
+                        )}
+                        {montoExtras > 0 && (
+                          <small style={{ color: '#B45309', fontWeight: 700, display: 'block', fontSize: '0.74rem' }}>
+                            +${montoExtras.toLocaleString('es-MX', { minimumFractionDigits: 2 })} (extras)
+                          </small>
+                        )}
+                        {montoLiq <= 0 && montoExtras <= 0 && '-'}
                       </td>
                       <td>
-                        {montoLiq > 0 ? (
-                          <span className="badge-pago" style={{ background: '#F0FDF4', color: '#15803D', border: '1px solid #BBF7D0' }}>
-                            {metodoLiquidacion}
-                          </span>
-                        ) : '-'}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                          {montoLiq > 0 && (
+                            <span className="badge-pago" style={{ background: '#F0FDF4', color: '#15803D', border: '1px solid #BBF7D0' }}>
+                              {metodoLiquidacion}
+                            </span>
+                          )}
+                          {montoExtras > 0 && metodoExtras && (
+                            <span className="badge-pago" style={{ background: '#FEF3C7', color: '#B45309', border: '1px solid #FDE68A', fontSize: '0.72rem' }}>
+                              {metodoExtras}
+                            </span>
+                          )}
+                          {montoLiq <= 0 && montoExtras <= 0 && '-'}
+                        </div>
                       </td>
                       <td>
                         <strong style={{ fontSize: '0.95rem', color: '#0F172A' }}>
