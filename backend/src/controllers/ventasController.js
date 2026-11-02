@@ -16,6 +16,26 @@ function normalizarVentaCabana(registro) {
   if (hExtra > 0) cobrosExtraDetalle.push(`+${hExtra}h extra ($${costoHExtra.toLocaleString('es-MX')})`);
   if (pExtra > 0) cobrosExtraDetalle.push(`+${pExtra} pers. extra ($${costoPExtra.toLocaleString('es-MX')})`);
 
+  // Otros extras personalizados (toallas, cobijas, leña, etc.)
+  const oExtraMonto = Number(registro.otro_extra_monto) || 0;
+  const oExtraConcepto = registro.otro_extra_concepto ? String(registro.otro_extra_concepto).trim() : null;
+
+  if (oExtraMonto > 0) {
+    cobrosExtraDetalle.push(`${oExtraConcepto || 'Servicio extra'}: $${oExtraMonto.toLocaleString('es-MX')}`);
+  } else if (registro.concepto && registro.concepto.includes('[Extras:')) {
+    const regexExtras = /\[Extras:\s*([^\]]+)\]/gi;
+    let mExt;
+    while ((mExt = regexExtras.exec(registro.concepto)) !== null) {
+      const partes = mExt[1].split(',');
+      for (const p of partes) {
+        const item = p.trim();
+        if (!item.startsWith('+') && item.includes('$')) {
+          cobrosExtraDetalle.push(item.replace(/\s*pagado con\s+.*$/i, '').trim());
+        }
+      }
+    }
+  }
+
   let cargoDano = 0;
   if (registro.concepto && registro.concepto.includes('[Daño/Pérdida:')) {
     const regex = /\[Daño\/Pérdida:\s*([^(]+?)\s*\(\$([0-9.,]+)\)\]/gi;
@@ -35,7 +55,7 @@ function normalizarVentaCabana(registro) {
     }
   }
 
-  const cobrosExtraTotal = costoHExtra + costoPExtra + cargoDano;
+  const cobrosExtraTotal = costoHExtra + costoPExtra + cargoDano + oExtraMonto;
 
   return {
     ...registro,
@@ -43,6 +63,8 @@ function normalizarVentaCabana(registro) {
     nombre_reservacion: registro.nombre_reservacion || 'Sin Nombre',
     cliente_nombre: registro.nombre_reservacion || 'Sin Nombre',
     costo_cabana: Number(registro.costo_cabana) || 0,
+    otro_extra_monto: oExtraMonto,
+    otro_extra_concepto: oExtraConcepto,
     cobros_extra_total: cobrosExtraTotal,
     cobros_extra_detalle: cobrosExtraDetalle
   };
@@ -487,11 +509,22 @@ export async function asignarHorasExtra(req, res) {
     const horasPrevias = Number(ventaExistente.horas_extra) || 0;
     const totalHorasExtra = horasPrevias + numHoras;
     const nuevoCostoHorasExtra = totalHorasExtra * 250.0;
-    const nuevaHoraCheckout = `${String(12 + totalHorasExtra).padStart(2, '0')}:00`;
+    const nuevaHoraCheckout = totalHorasExtra > 0
+      ? `${String(12 + totalHorasExtra).padStart(2, '0')}:00`
+      : (ventaExistente.hora_checkout || '12:00');
 
     const personasPrevias = Number(ventaExistente.personas_extra) || 0;
     const totalPersonasExtra = personasPrevias + numPersonas;
     const nuevoCostoPersonasExtra = totalPersonasExtra * 250.0;
+
+    const otroMontoPrevio = Number(ventaExistente.otro_extra_monto) || 0;
+    const nuevoOtroExtraMonto = otroMontoPrevio + cargoOtro;
+    let nuevoOtroExtraConcepto = ventaExistente.otro_extra_concepto || null;
+    if (cargoOtro > 0 && conceptoOtro) {
+      nuevoOtroExtraConcepto = nuevoOtroExtraConcepto
+        ? `${nuevoOtroExtraConcepto}, ${conceptoOtro}`
+        : conceptoOtro;
+    }
 
     const subtotalPrevio = Number(ventaExistente.subtotal) || 0;
     const nuevoSubtotal = subtotalPrevio + cargoTotalAdicional;
@@ -519,6 +552,8 @@ export async function asignarHorasExtra(req, res) {
         hora_checkout: nuevaHoraCheckout,
         personas_extra: totalPersonasExtra,
         costo_personas_extra: nuevoCostoPersonasExtra,
+        otro_extra_monto: nuevoOtroExtraMonto,
+        otro_extra_concepto: nuevoOtroExtraConcepto,
         subtotal: nuevoSubtotal,
         total: nuevoTotal,
         monto_liquidado: nuevoMontoLiquidado,

@@ -93,6 +93,12 @@ function obtenerDesgloseCobrosExtra(v) {
     extras.push(`Daño: ${dano.concepto} ($${dano.monto.toLocaleString('es-MX')})`);
   }
 
+  const oExtraMonto = Number(v.otro_extra_monto) || 0;
+  const oExtraConcepto = v.otro_extra_concepto ? String(v.otro_extra_concepto).trim() : null;
+  if (oExtraMonto > 0) {
+    extras.push(`${oExtraConcepto || 'Servicio extra'} ($${oExtraMonto.toLocaleString('es-MX')})`);
+  }
+
   return extras;
 }
 
@@ -792,6 +798,7 @@ export default function PaginaReportes({
                           const subtotalEst = (Number(v.costo_cabana) || 0) +
                             (Number(v.costo_horas_extra) || (Number(v.horas_extra) * 250) || 0) +
                             (Number(v.costo_personas_extra) || 0) +
+                            (Number(v.otro_extra_monto) || 0) +
                             (Number(v.costo_actividades) || 0) ||
                             (Number(v.total) + descMonto);
                           const porcentajeCalculado = subtotalEst > 0

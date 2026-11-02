@@ -390,7 +390,8 @@ function generarHojaEstadisticas(ventas, claveSemana, semanaActual, tipoFiltro =
       const cPExtra = Number(v.costo_personas_extra) || (pExtra * 250);
       const cNoches = Number(v.costo_cabana) || 0;
       const dano = obtenerDanoDeposito(v);
-      const totCabana = cNoches + cPExtra + cHExtra;
+      const oExtra = Number(v.otro_extra_monto) || 0;
+      const totCabana = cNoches + cPExtra + cHExtra + oExtra;
       granTotal = Math.max(totCabana - descuento + dano.monto, Number(v.total) || 0, anticipo + montoLiquidado + saldoPendiente + dano.monto);
 
       totalCabanasSum += granTotal;
@@ -838,7 +839,8 @@ function generarHojaCabanas(ventasCabanas, infoSemana) {
     const cPExtra = Number(v.costo_personas_extra) || (pExtra * 250);
     const cNoches = Number(v.costo_cabana) || 0;
     const dano = obtenerDanoDeposito(v);
-    const totCabana = cNoches + cPExtra + cHExtra;
+    const oExtra = Number(v.otro_extra_monto) || 0;
+    const totCabana = cNoches + cPExtra + cHExtra + oExtra;
     const granTotal = Math.max(totCabana - descuento + dano.monto, Number(v.total) || 0, anticipo + montoLiquidado + dano.monto);
 
     const liqEfectiva = v.estado_pago === 'liquidado'
