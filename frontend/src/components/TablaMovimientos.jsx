@@ -35,6 +35,9 @@ function obtenerNombreConcepto(v) {
 }
 
 function obtenerDesgloseCobrosExtra(v) {
+  if (Array.isArray(v.cobros_extra_detalle) && v.cobros_extra_detalle.length > 0) {
+    return v.cobros_extra_detalle;
+  }
   const extras = [];
   const hExtra = Number(v.horas_extra) || 0;
   const costoHExtra = Number(v.costo_horas_extra) || (hExtra * 250);
@@ -46,6 +49,12 @@ function obtenerDesgloseCobrosExtra(v) {
   const costoPExtra = Number(v.costo_personas_extra) || (pExtra * 250);
   if (pExtra > 0) {
     extras.push(`+${pExtra} pers. ($${costoPExtra.toLocaleString('es-MX')})`);
+  }
+
+  const oExtraMonto = Number(v.otro_extra_monto) || 0;
+  const oExtraConcepto = v.otro_extra_concepto ? String(v.otro_extra_concepto).trim() : null;
+  if (oExtraMonto > 0) {
+    extras.push(`${oExtraConcepto || 'Extra'} ($${oExtraMonto.toLocaleString('es-MX')})`);
   }
 
   if (v.concepto && v.concepto.includes('[Daño/Pérdida:')) {

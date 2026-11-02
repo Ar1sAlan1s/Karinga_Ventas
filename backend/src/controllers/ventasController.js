@@ -16,6 +16,26 @@ function normalizarVentaCabana(registro) {
   if (hExtra > 0) cobrosExtraDetalle.push(`+${hExtra}h extra ($${costoHExtra.toLocaleString('es-MX')})`);
   if (pExtra > 0) cobrosExtraDetalle.push(`+${pExtra} pers. extra ($${costoPExtra.toLocaleString('es-MX')})`);
 
+  // Otros extras personalizados (toallas, cobijas, leña, etc.)
+  const oExtraMonto = Number(registro.otro_extra_monto) || 0;
+  const oExtraConcepto = registro.otro_extra_concepto ? String(registro.otro_extra_concepto).trim() : null;
+
+  if (oExtraMonto > 0) {
+    cobrosExtraDetalle.push(`${oExtraConcepto || 'Servicio extra'}: $${oExtraMonto.toLocaleString('es-MX')}`);
+  } else if (registro.concepto && registro.concepto.includes('[Extras:')) {
+    const regexExtras = /\[Extras:\s*([^\]]+)\]/gi;
+    let mExt;
+    while ((mExt = regexExtras.exec(registro.concepto)) !== null) {
+      const partes = mExt[1].split(',');
+      for (const p of partes) {
+        const item = p.trim();
+        if (!item.startsWith('+') && item.includes('$')) {
+          cobrosExtraDetalle.push(item.replace(/\s*pagado con\s+.*$/i, '').trim());
+        }
+      }
+    }
+  }
+
   let cargoDano = 0;
   if (registro.concepto && registro.concepto.includes('[Daño/Pérdida:')) {
     const regex = /\[Daño\/Pérdida:\s*([^(]+?)\s*\(\$([0-9.,]+)\)\]/gi;
@@ -35,7 +55,35 @@ function normalizarVentaCabana(registro) {
     }
   }
 
-  const cobrosExtraTotal = costoHExtra + costoPExtra + cargoDano;
+  let mExtrasPagado = Number(registro.monto_extras_pagado) || 0;
+  let metExtras = registro.metodo_pago_extras || null;
+  let metLiq = registro.metodo_pago_liquidacion;
+  let montoLiq = Number(registro.monto_liquidado) || 0;
+
+  // Si notas contiene el desglose original de check-in, asegurar consistencia de métodos
+  if (registro.notas && registro.notas.includes('[Check-in liquidado:')) {
+    const mChk = /\[Check-in liquidado:\s*\$([0-9.,]+)\s*vía\s*([^\](]+)/i.exec(registro.notas);
+    if (mChk) {
+      metLiq = mChk[2].trim();
+      const checkinMonto = parseFloat(mChk[1]) || 0;
+      if (checkinMonto > 0 && montoLiq > checkinMonto) {
+        if (mExtrasPagado === 0) {
+          mExtrasPagado = Math.max(0, montoLiq - checkinMonto);
+        }
+        montoLiq = checkinMonto;
+      }
+    }
+  }
+
+  if (!metExtras && registro.notas && registro.notas.includes('[Extras:')) {
+    const mExt = /\[Extras:[^\]]+pagado con\s+([^\]]+)\]/i.exec(registro.notas);
+    if (mExt && mExt[1]) {
+      metExtras = mExt[1].trim();
+      if (mExtrasPagado === 0) mExtrasPagado = oExtraMonto;
+    }
+  }
+
+  const cobrosExtraTotal = costoHExtra + costoPExtra + cargoDano + oExtraMonto;
 
   return {
     ...registro,
@@ -43,6 +91,12 @@ function normalizarVentaCabana(registro) {
     nombre_reservacion: registro.nombre_reservacion || 'Sin Nombre',
     cliente_nombre: registro.nombre_reservacion || 'Sin Nombre',
     costo_cabana: Number(registro.costo_cabana) || 0,
+    monto_liquidado: montoLiq,
+    metodo_pago_liquidacion: metLiq,
+    otro_extra_monto: oExtraMonto,
+    otro_extra_concepto: oExtraConcepto,
+    monto_extras_pagado: mExtrasPagado,
+    metodo_pago_extras: metExtras,
     cobros_extra_total: cobrosExtraTotal,
     cobros_extra_detalle: cobrosExtraDetalle
   };
@@ -487,19 +541,46 @@ export async function asignarHorasExtra(req, res) {
     const horasPrevias = Number(ventaExistente.horas_extra) || 0;
     const totalHorasExtra = horasPrevias + numHoras;
     const nuevoCostoHorasExtra = totalHorasExtra * 250.0;
-    const nuevaHoraCheckout = `${String(12 + totalHorasExtra).padStart(2, '0')}:00`;
+    const nuevaHoraCheckout = totalHorasExtra > 0
+      ? `${String(12 + totalHorasExtra).padStart(2, '0')}:00`
+      : (ventaExistente.hora_checkout || '12:00');
 
     const personasPrevias = Number(ventaExistente.personas_extra) || 0;
     const totalPersonasExtra = personasPrevias + numPersonas;
     const nuevoCostoPersonasExtra = totalPersonasExtra * 250.0;
+
+    const otroMontoPrevio = Number(ventaExistente.otro_extra_monto) || 0;
+    const nuevoOtroExtraMonto = otroMontoPrevio + cargoOtro;
+    let nuevoOtroExtraConcepto = ventaExistente.otro_extra_concepto || null;
+    if (cargoOtro > 0 && conceptoOtro) {
+      nuevoOtroExtraConcepto = nuevoOtroExtraConcepto
+        ? `${nuevoOtroExtraConcepto}, ${conceptoOtro}`
+        : conceptoOtro;
+    }
 
     const subtotalPrevio = Number(ventaExistente.subtotal) || 0;
     const nuevoSubtotal = subtotalPrevio + cargoTotalAdicional;
     const descuento = Number(ventaExistente.descuento_especial) || 0;
     const nuevoTotal = Math.max(0, nuevoSubtotal - descuento);
 
-    const montoLiqPrevio = Number(ventaExistente.monto_liquidado) || 0;
-    const nuevoMontoLiquidado = montoLiqPrevio + cargoTotalAdicional;
+    // Extras pagados por separado (NO inflan ni sobrescriben la liquidación del check-in)
+    const montoExtrasPrevio = Number(ventaExistente.monto_extras_pagado) || 0;
+    const nuevoMontoExtrasPagado = montoExtrasPrevio + cargoTotalAdicional;
+    const nuevoMetodoPagoExtras = metodo_pago;
+
+    let metodoLiqPreservado = ventaExistente.metodo_pago_liquidacion;
+    let montoLiqPreservado = Number(ventaExistente.monto_liquidado) || 0;
+
+    if (ventaExistente.notas && ventaExistente.notas.includes('[Check-in liquidado:')) {
+      const mChk = /\[Check-in liquidado:\s*\$([0-9.,]+)\s*vía\s*([^\](]+)/i.exec(ventaExistente.notas);
+      if (mChk) {
+        metodoLiqPreservado = mChk[2].trim();
+        const checkinMonto = parseFloat(mChk[1]) || 0;
+        if (checkinMonto > 0) {
+          montoLiqPreservado = checkinMonto;
+        }
+      }
+    }
 
     const partesDesc = [];
     if (numHoras > 0) partesDesc.push(`+${numHoras}h extra ($${cargoHoras})`);
@@ -519,10 +600,14 @@ export async function asignarHorasExtra(req, res) {
         hora_checkout: nuevaHoraCheckout,
         personas_extra: totalPersonasExtra,
         costo_personas_extra: nuevoCostoPersonasExtra,
+        otro_extra_monto: nuevoOtroExtraMonto,
+        otro_extra_concepto: nuevoOtroExtraConcepto,
+        monto_extras_pagado: nuevoMontoExtrasPagado,
+        metodo_pago_extras: nuevoMetodoPagoExtras,
         subtotal: nuevoSubtotal,
         total: nuevoTotal,
-        monto_liquidado: nuevoMontoLiquidado,
-        metodo_pago_liquidacion: metodo_pago,
+        monto_liquidado: montoLiqPreservado,
+        metodo_pago_liquidacion: metodoLiqPreservado,
         concepto: nuevoConcepto,
         notas: nuevasNotas,
         updated_at: new Date()

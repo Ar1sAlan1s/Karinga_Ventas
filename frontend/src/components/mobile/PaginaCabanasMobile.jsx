@@ -1076,6 +1076,80 @@ export default function PaginaCabanasMobile({
             </div>
 
             <div className="karinga-mobile-field-block">
+              <label className="karinga-mobile-label">Otro Servicio o Extra Personalizado:</label>
+              <input
+                type="text"
+                className="karinga-mobile-input"
+                placeholder="Ej. Cobija extra, Toalla adicional, Carga de leña"
+                value={otroConceptoExtra}
+                onChange={(e) => setOtroConceptoExtra(e.target.value)}
+              />
+            </div>
+
+            <div className="karinga-mobile-field-block">
+              <label className="karinga-mobile-label">Precio del Servicio ($ MXN):</label>
+              <input
+                type="number"
+                min="0"
+                step="any"
+                className="karinga-mobile-input"
+                placeholder="0.00"
+                value={otroMontoExtra}
+                onChange={(e) => setOtroMontoExtra(e.target.value)}
+              />
+            </div>
+
+            {/* Sugerencias rápidas mobile */}
+            <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
+              {[
+                { nombre: 'Cobija Extra', precio: 50 },
+                { nombre: 'Toalla Adicional', precio: 50 },
+                { nombre: 'Carga de Leña', precio: 100 }
+              ].map((item) => (
+                <button
+                  key={item.nombre}
+                  type="button"
+                  onClick={() => {
+                    setOtroConceptoExtra(item.nombre);
+                    setOtroMontoExtra(item.precio);
+                  }}
+                  style={{
+                    background: otroConceptoExtra === item.nombre ? '#E0F2FE' : '#F1F5F9',
+                    border: otroConceptoExtra === item.nombre ? '1px solid #0284C7' : '1px solid #CBD5E1',
+                    color: otroConceptoExtra === item.nombre ? '#0369A1' : '#334155',
+                    borderRadius: '14px',
+                    padding: '0.2rem 0.55rem',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  +{item.nombre} (${item.precio})
+                </button>
+              ))}
+              {Boolean(otroConceptoExtra || otroMontoExtra) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOtroConceptoExtra('');
+                    setOtroMontoExtra('');
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#94A3B8',
+                    fontSize: '0.75rem',
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                    padding: '0.2rem 0.4rem'
+                  }}
+                >
+                  Limpiar
+                </button>
+              )}
+            </div>
+
+            <div className="karinga-mobile-field-block">
               <label className="karinga-mobile-label">Método de Cobro Extra:</label>
               <select
                 className="karinga-mobile-select"
@@ -1093,20 +1167,25 @@ export default function PaginaCabanasMobile({
               className="karinga-mobile-complete-checkin-btn"
               onClick={() => {
                 if (!extraReservaId) return;
+                const otroMonto = Math.max(0, parseFloat(otroMontoExtra) || 0);
                 if (alAsignarHorasExtra) {
                   alAsignarHorasExtra(extraReservaId, {
                     horas_extra: horasExtra,
                     personas_extra: personasExtra,
+                    otro_extra_concepto: otroConceptoExtra.trim(),
+                    otro_extra_monto: otroMonto,
                     metodo_pago: metodoPagoExtras,
                     notas: 'Cargos extras registrados desde versión móvil'
                   }, () => {
                     setHorasExtra(0);
                     setPersonasExtra(0);
+                    setOtroConceptoExtra('');
+                    setOtroMontoExtra('');
                     setExtraReservaId('');
                   });
                 }
               }}
-              disabled={registrando || !extraReservaId || (horasExtra === 0 && personasExtra === 0)}
+              disabled={registrando || !extraReservaId || (horasExtra === 0 && personasExtra === 0 && (parseFloat(otroMontoExtra) || 0) <= 0)}
             >
               <Icono nombre="check" tamano={18} color="#FFFFFF" />
               <span>Registrar Cargos Extras</span>

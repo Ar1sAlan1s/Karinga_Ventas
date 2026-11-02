@@ -1685,7 +1685,7 @@ export default function PaginaCabanas({
                       id="otro-concepto-h"
                       type="text"
                       className="karinga-input"
-                      placeholder="Ej. Leña adicional, Renta de asador premium, Colchón extra"
+                      placeholder="Ej. Cobija extra, Toalla adicional, Carga de leña"
                       value={otroConceptoHistorial}
                       onChange={(e) => setOtroConceptoHistorial(e.target.value)}
                     />
@@ -1703,6 +1703,64 @@ export default function PaginaCabanas({
                       value={otroMontoHistorial}
                       onChange={(e) => setOtroMontoHistorial(e.target.value)}
                     />
+                  </div>
+                </div>
+
+                {/* Sugerencias rápidas de servicios extras */}
+                <div style={{ marginTop: '0.5rem', marginBottom: '0.5rem' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#64748B' }}>Sugerencias:</span>
+                    {[
+                      { nombre: 'Cobija Extra', precio: 50 },
+                      { nombre: 'Toalla Adicional', precio: 50 },
+                      { nombre: 'Carga de Leña', precio: 100 }
+                    ].map((item) => (
+                      <button
+                        key={item.nombre}
+                        type="button"
+                        onClick={() => {
+                          setOtroConceptoHistorial(item.nombre);
+                          setOtroMontoHistorial(item.precio);
+                        }}
+                        style={{
+                          background: otroConceptoHistorial === item.nombre ? '#E0F2FE' : '#F8FAFC',
+                          border: otroConceptoHistorial === item.nombre ? '1px solid #0284C7' : '1px solid #E2E8F0',
+                          color: otroConceptoHistorial === item.nombre ? '#0369A1' : '#334155',
+                          borderRadius: '16px',
+                          padding: '0.25rem 0.7rem',
+                          fontSize: '0.78rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        <span>+ {item.nombre}</span>
+                        <strong style={{ color: '#059669' }}>(${item.precio})</strong>
+                      </button>
+                    ))}
+                    {Boolean(otroConceptoHistorial || otroMontoHistorial) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOtroConceptoHistorial('');
+                          setOtroMontoHistorial('');
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#94A3B8',
+                          fontSize: '0.78rem',
+                          cursor: 'pointer',
+                          padding: '0.2rem 0.4rem',
+                          textDecoration: 'underline'
+                        }}
+                      >
+                        Limpiar
+                      </button>
+                    )}
                   </div>
                 </div>
 
